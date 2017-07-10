@@ -1,0 +1,32 @@
+.slider {
+  $border-size: 2px;
+
+  position: relative;
+  display: inline-block;
+  min-width: $size-control * 2;
+  width: 100%;
+  height: $size-control;
+
+  &::before {
+    content: '';
+    display: block;
+    position: absolute;
+    height: ($size-control - $border-size) / 2;
+    width: 100%;
+    border-bottom: $border-size solid $palette-primary;
+  }
+
+  .slider-container {
+    position: absolute;
+    left: 0;
+    right: $size-control;
+  }
+
+  .slider-button {
+    touch-action: pan-x;
+    position: absolute;
+    height: $size-control;
+    width: $size-control;
+    background-color: $palette-primary;
+  }
+}

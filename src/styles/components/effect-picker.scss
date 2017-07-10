@@ -1,0 +1,42 @@
+.effect-picker {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  background-color: $palette-background;
+
+  .effect-picker-header {
+    display: flex;
+    flex-direction: row;
+    padding: $interval-block;
+    line-height: $size-control;
+
+    & > * + * {
+      margin-left: $interval-component;
+    }
+
+    input {
+      flex: 1;
+      min-width: $size-control * 4;
+    }
+  }
+
+  .effect-picker-list {
+    flex: 1;
+    list-style: none;
+    padding: 0;
+    overflow-y: auto;
+
+    li {
+      cursor: pointer;
+      padding: $interval-block;
+      border-top: 1px solid $palette-muted;
+      transition: background-color 0.1s linear;
+
+      &:hover {
+        background-color: $palette-muted;
+      }
+    }
+  }
+}

@@ -1,0 +1,128 @@
+.l-composer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+
+  .composer-sidebar {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: $sidebar-width;
+    transition: left 0.3s ease;
+    background-color: $palette-background;
+
+    .composer-sidebar-header {
+      text-align: center;
+      border-bottom: 1px solid $palette-muted;
+    }
+  }
+
+  .composer-screen {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: $sidebar-width;
+    overflow: hidden;
+    transition: left 0.3s ease;
+  }
+}
+
+.l-composer-compact {
+  .composer-sidebar {
+    z-index: 1;
+    left: -$sidebar-width;
+
+    // Add 1px area on the left of the screen.
+    // Hovering on it, user can open sidebar.
+    &::after {
+      content: '';
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      right: -1px;
+      width: 1px;
+    }
+
+    &:hover {
+      left: 0;
+      transition-delay: 0.5s;
+
+      // Prevent sidebar from closing immediately when user accidentaly
+      // moves cursor out of it for a few pixels.
+      &::after {
+        right: -50px;
+        width: 50px;
+      }
+    }
+  }
+
+  .composer-screen {
+    left: 0;
+
+    // Hide action buttons when background picker is inactive
+    .image-container-actions:not(.active) {
+      opacity: 0;
+      transition: opacity 0.1s linear;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+@media screen and (min-width: $sidebar-width * 2) {
+  .composer-mobile-menu-button {
+    display: none;
+  }
+}
+
+@media screen and (max-width: $sidebar-width * 2) {
+  .l-composer {
+    .composer-mobile-menu-button {
+      z-index: 1;
+      position: absolute;
+      top: $interval-block;
+      left: calc(100% - #{$size-control * 1.5} - #{$interval-block});
+      width: $size-control * 1.5;
+      height: $size-control * 1.5;
+      border-radius: 50%;
+      background-image: url('/assets/menu.svg');
+      background-size: contain;
+      transition: all 0.3s ease;
+    }
+
+    .composer-sidebar {
+      width: 100%;
+    }
+
+    .composer-screen {
+      left: 100vw;
+    }
+
+    &.l-composer-compact {
+      .composer-mobile-menu-button {
+        opacity: 0.6;
+        left: $interval-block;
+        right: 0;
+        background-color: $palette-background;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+      }
+
+      .composer-sidebar {
+        left: -100%;
+      }
+
+      .composer-screen {
+        left: 0;
+      }
+    }
+  }
+}

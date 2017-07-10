@@ -1,0 +1,25 @@
+.toggle {
+  $border-size: 2px;
+
+  display: inline-block;
+  position: relative;
+  user-select: none;
+  box-sizing: border-box;
+  width: $size-control;
+  height: $size-control;
+  border: $border-size solid $palette-primary;
+  padding: $border-size;
+  vertical-align: top;
+
+  .toggle-button {
+    width: $size-control - $border-size * 4;
+    height: $size-control - $border-size * 4;
+    background-color: $palette-primary;
+    transition: transform 0.1s ease;
+    transform: scale(0);
+  }
+
+  &.active .toggle-button {
+    transform: scale(1);
+  }
+}

@@ -1,0 +1,59 @@
+@mixin button-variant($bg, $fg) {
+  background-color: $bg;
+  color: $fg;
+
+  &:hover {
+    background-color: darken($bg, 5%);
+  }
+
+  &:active {
+    background-color: darken($bg, 10%);
+  }
+}
+
+.button {
+  display: inline-block;
+  box-sizing: border-box;
+  height: $size-control;
+  margin: 0;
+  padding: 1px ($size-control / 4);
+  border: 0;
+  line-height: $size-control;
+  font-family: $font-text;
+  font-size: $size-text;
+  text-decoration: none;
+  @include button-variant($palette-primary, $palette-foreground-inverse);
+
+  &:visited {
+    color: $palette-foreground;
+  }
+}
+
+.button-transparent {
+  $hover-color: rgba(0, 0, 0, 0.1);
+  $active-color: rgba(0, 0, 0, 0.2);
+  background-color: transparent;
+  color: $palette-foreground;
+
+  &:hover {
+    background-color: transparent;
+    background-image: linear-gradient($hover-color, $hover-color);
+  }
+
+  &:active {
+    background-color: transparent;
+    background-image: linear-gradient($active-color, $active-color);
+  }
+}
+
+.button-muted {
+  @include button-variant($palette-muted, $palette-foreground);
+}
+
+.button-negative {
+  @include button-variant($palette-negative, $palette-foreground-inverse);
+}
+
+.button-positive {
+  @include button-variant($palette-positive, $palette-foreground-inverse);
+}

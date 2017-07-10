@@ -1,0 +1,37 @@
+// In general I'm following SMACSS. Result may seem "bootstrap"-ish but that's
+// because the bootstrap seemingly uses the same approach. I was thinking to go
+// with alternative path of using semantic classes like Semantic-UI does, but
+// this practice is not common yet, and being similar to famous twitter
+// CSS framework is probably a good thing.
+
+// Base
+
+@import './reset.scss';
+@import './variables.scss';
+@import './typography.scss';
+@import './atomic.scss';
+@import './responsive.scss';
+
+// Theme
+
+@import './themes/default.scss';
+@import './text-variations.scss';
+
+// Layouts/Pages
+
+@import './layouts/l-composer.scss';
+@import './layouts/l-kitchen-sink.scss';
+
+// Components
+
+@import './components/input.scss';
+@import './components/grid.scss';
+@import './components/button.scss';
+@import './components/slider.scss';
+@import './components/toggle.scss';
+@import './components/pipeline-editor.scss';
+@import './components/effect-editor.scss';
+@import './components/color-well.scss';
+@import './components/image-container.scss';
+@import './components/effect-picker.scss';
+@import './components/precise-slider.scss';

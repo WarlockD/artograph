@@ -1,0 +1,45 @@
+// Default theme
+
+$palette-foreground: hsl(0, 0%, 5%);
+$palette-background: hsl(0, 100%, 100%);
+$palette-foreground-inverse: $palette-background;
+$palette-muted: hsl(0, 0%, 90%);
+$palette-primary: hsl(200, 65%, 47%);
+$palette-positive: hsl(150, 80%, 40%);
+$palette-negative: hsl(-10, 70%, 60%);
+
+html, body {
+  color: lighten($palette-foreground, 30%);
+  background-color: $palette-background;
+}
+
+h1, h2, h3 {
+  color: $palette-foreground;
+}
+
+hr {
+  border: 0;
+  border-bottom: 1px solid $palette-muted;
+}
+
+a {
+  cursor: pointer;
+  color: $palette-primary;
+
+  &:hover {
+    color: darken($palette-primary, 10%);
+  }
+
+  &:visited {
+    color: darken($palette-positive, 10%);
+  }
+
+  &:visited:hover {
+    color: darken($palette-positive, 20%);
+  }
+}
+
+::selection {
+  background-color: lighten($palette-primary, 0);
+  color: $palette-background;
+}

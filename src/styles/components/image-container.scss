@@ -1,0 +1,97 @@
+.image-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+
+  .image-container-backdrop {
+    cursor: move;
+    touch-action: manipulation;
+    user-select: none;
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+
+  .image-container-wrapper {
+    display: inline-block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    line-height: 0;
+  }
+
+  .image-container-actions {
+    cursor: default;
+    position: absolute;
+    bottom: 0;
+    padding: $interval-block;
+
+    .button, .color-well {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.1s linear;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+
+      &:hover, &.active {
+        opacity: 0.9;
+      }
+    }
+
+    .button {
+      width: $size-control * 1.5;
+      height: $size-control * 1.5;
+      margin-right: $interval-component;
+      border-radius: 50%;
+      background-color: $palette-background;
+      background-size: $size-control;
+      background-repeat: no-repeat;
+      outline: none;
+    }
+
+    .bg-button {
+      background-image: url('/assets/fill-tool.svg');
+      background-position: 50% 45%;
+    }
+
+    .hide-ui-button {
+      background-image: url('/assets/fullscreen.svg');
+      background-position: 50% 50%;
+    }
+
+    .color-buttons {
+      display: inline-block;
+      vertical-align: top;
+      position: relative;
+      height: $size-control * 1.5;
+      width: 0;
+      opacity: 0;
+      transition: all 0.2s ease;
+      overflow: hidden;
+
+      &.active {
+        width: ($size-control + 5px) * 4;
+        opacity: 1;
+      }
+
+      .button, .color-well {
+        display: inline-block;
+        position: absolute;
+        top: $size-control - $size-control * 1.5 / 2;
+        left: 0;
+        width: $size-control;
+        height: $size-control;
+        margin-left: 0.2em;
+        border: 2px solid white;
+      }
+
+      .color-well {
+        border-radius: 50%;
+        left: 75%;
+        // Turn off inline color for preview with "important"
+        background-color: white !important;
+        background-image: url('/assets/color-wheel-32.png');
+        background-size: cover;
+      }
+    }
+  }
+}
