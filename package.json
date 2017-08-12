@@ -6,7 +6,8 @@
     "start": "webpack-dev-server --inline --hot",
     "bundle": "webpack -p",
     "backup": "tar --exclude='./node_modules' -cf ../photospice.tar .",
-    "test": "jest"
+    "test": "jest",
+    "test-watch": "jest --watch"
   },
   "jest": {
     "rootDir": "src/"
