@@ -87,3 +87,7 @@ export function dragHelper(options) {
     document.addEventListener(eventNames[1], onDragEnd);
   }
 }
+
+export function assert(condition, message) {
+  if (condition) throw new Error(message);
+}
