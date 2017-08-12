@@ -1,3 +1,4 @@
+import { assert } from '../utils';
 import SceneNode from './SceneNode';
 import SceneGraph from './SceneGraph';
 
@@ -30,6 +31,8 @@ class SummatorNode extends SceneNode {
   }
 
   run(inputs) {
+    assert(!inputs.a, 'Input "a" is missing');
+    assert(!inputs.b, 'Input "b" is missing');
     return { c: inputs.a + inputs.b };
   }
 }
@@ -130,5 +133,67 @@ describe('SceneGraph.run', () => {
     a.value = 20;
     scene.run(c);
     expect(c.run).toHaveBeenCalledTimes(2);
+  });
+
+  test('Rerun node if links are changed', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    // Note that c is the same as b
+    const c = new ValueNode(20);
+    const d = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.attachNode(c);
+    scene.attachNode(d);
+    scene.connect(a, 'value', d, 'a');
+    scene.connect(b, 'value', d, 'b');
+    d.run = jest.fn();
+    scene.run(d);
+    scene.disconnect(b, 'value', d, 'b');
+    scene.connect(c, 'value', d, 'b');
+    scene.run(d);
+    expect(d.run).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('SceneGraph.disconnect', () => {
+  test('Fail if input doesn\'t exist', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.disconnect(a, 'value', b, 'INVALID_INPUT');
+    }).toThrowError('Invalid input "INVALID_INPUT"');
+  });
+
+  test('Fail if link doesn\'t exist', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.disconnect(a, 'value', b, 'a');
+    }).toThrowError('Connection value=>a doesn\'t exist');
+  });
+
+  test('Disconnect existing link', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    const c = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.attachNode(c);
+    scene.connect(a, 'value', c, 'a');
+    scene.connect(b, 'value', c, 'b');
+    scene.run(c);
+    scene.disconnect(a, 'value', c, 'a');
+    expect(() => {
+      scene.run(c);
+    }).toThrowError('Input "a" is missing');
   });
 });
