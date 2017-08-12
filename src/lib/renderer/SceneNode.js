@@ -1,6 +1,6 @@
 export default class SceneNode {
   constructor(schema) {
-    this.inputs = schema.inputs || {};
-    this.outputs = schema.outputs || {};
+    this.inputs = schema.inputs;
+    this.outputs = schema.outputs;
   }
 }

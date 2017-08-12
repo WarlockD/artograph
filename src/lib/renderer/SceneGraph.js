@@ -16,32 +16,45 @@ export default class SceneGraph {
     assert(!input, `Invalid input "${targetIn}"`);
     assert(!output, `Invalid output "${sourceOut}"`);
     assert(input.type !== output.type, `Connection ${sourceOut}:${output.type}=>${targetIn}:${input.type} is not possible`);
-    assert(input.connection, 'Input is already connected');
+    assert(input.link, 'Input is already connected');
 
-    input.connection = {
+    input.link = {
       source: sourceNode,
       sourceOut: sourceOut,
       value: undefined,
+      prevValue: undefined,
     };
   }
 
   // TODO: detachNode
   // TODO: disconnect
 
-  // TODO: Do not run node if inputs aren't changed
   run(node) {
-    const inputs = {};
+    if (node.inputs) {
+      const inputs = {};
+      let isDirty = false;
 
-    for (let inputId in node.inputs) {
-      const input = node.inputs[inputId];
-      const conn = input.connection;
-      if (conn && typeof conn.value === 'undefined') {
-        const outputs = this.run(conn.source);
-        input.connection.value = outputs[conn.sourceOut];
+      for (let inputId in node.inputs) {
+        const input = node.inputs[inputId];
+        const link = input.link;
+        if (link) {
+          const outputs = this.run(link.source);
+          link.value = outputs[link.sourceOut];
+          if (link.value !== link.prevValue) {
+            isDirty = true;
+            link.prevValue = link.value;
+          }
+          inputs[inputId] = link.value;
+        }
       }
-      inputs[inputId] = input.connection.value;
+
+      if (isDirty) {
+        node.prevOutputs = node.run(inputs);
+      }
+    } else {
+      node.prevOutputs = node.run();
     }
 
-    return node.run(inputs);
+    return node.prevOutputs;
   }
 }

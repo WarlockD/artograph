@@ -1,7 +1,7 @@
 import SceneNode from './SceneNode';
 import SceneGraph from './SceneGraph';
 
-class ConstantNode extends SceneNode {
+class ValueNode extends SceneNode {
   constructor(value) {
     super({
       outputs: {
@@ -37,8 +37,8 @@ class SummatorNode extends SceneNode {
 describe('SceneGraph.run', () => {
   test('Trivial graph', () => {
     const scene = new SceneGraph();
-    const a = new ConstantNode(10);
-    const b = new ConstantNode(20);
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
     const c = new SummatorNode();
     scene.attachNode(a);
     scene.attachNode(b);
@@ -51,9 +51,9 @@ describe('SceneGraph.run', () => {
 
   test('2 levels deep graph', () => {
     const scene = new SceneGraph();
-    const a = new ConstantNode(10);
-    const b = new ConstantNode(20);
-    const c = new ConstantNode(30);
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    const c = new ValueNode(30);
     const d = new SummatorNode();
     const e = new SummatorNode();
     scene.attachNode(a);
@@ -71,8 +71,8 @@ describe('SceneGraph.run', () => {
 
   test('Output reuse', () => {
     const scene = new SceneGraph();
-    const a = new ConstantNode(10);
-    const b = new ConstantNode(20);
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
     const c = new SummatorNode();
     const d = new SummatorNode();
     scene.attachNode(a);
@@ -89,7 +89,7 @@ describe('SceneGraph.run', () => {
 
   test('Single input', () => {
     const scene = new SceneGraph();
-    const a = new ConstantNode(10);
+    const a = new ValueNode(10);
     const b = new SummatorNode();
     scene.attachNode(a);
     scene.attachNode(b);
@@ -97,5 +97,38 @@ describe('SceneGraph.run', () => {
     scene.connect(a, 'value', b, 'b');
     const outputs = scene.run(b);
     expect(outputs.c).toBe(20);
+  });
+
+  test('Do not rerun node if inputs are not changed', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    const c = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.attachNode(c);
+    scene.connect(a, 'value', c, 'a');
+    scene.connect(b, 'value', c, 'b');
+    c.run = jest.fn();
+    scene.run(c);
+    scene.run(c);
+    expect(c.run).toHaveBeenCalledTimes(1);
+  });
+
+  test('Rerun node if inputs are changed', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    const c = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.attachNode(c);
+    scene.connect(a, 'value', c, 'a');
+    scene.connect(b, 'value', c, 'b');
+    c.run = jest.fn();
+    scene.run(c);
+    a.value = 20;
+    scene.run(c);
+    expect(c.run).toHaveBeenCalledTimes(2);
   });
 });
