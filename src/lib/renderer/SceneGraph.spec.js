@@ -37,6 +37,97 @@ class SummatorNode extends SceneNode {
   }
 }
 
+describe('SceneGraph.attachNode', () => {
+  test('Attach valid node', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    scene.attachNode(a);
+    expect(scene.nodes.length).toBe(1);
+  });
+
+  test('Fail if node is invalid', () => {
+    const scene = new SceneGraph();
+    expect(() => {
+      scene.attachNode({ cr: 'ap' });
+    }).toThrowError('Invalid node');
+  });
+
+  test('Fail if node is already attached', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    scene.attachNode(a);
+    expect(() => {
+      scene.attachNode(a);
+    }).toThrowError('Node is already attached');
+  });
+});
+
+describe('SceneGraph.detachNode', () => {
+  test('Detach attached node', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    scene.attachNode(a);
+    scene.detachNode(a);
+    expect(scene.nodes.length).toBe(0);
+  });
+
+  test('Fail if node is invalid', () => {
+    const scene = new SceneGraph();
+    expect(() => {
+      scene.detachNode({ cr: 'ap' });
+    }).toThrowError('Invalid node');
+  });
+
+  test('Fail if node is not attached', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    expect(() => {
+      scene.detachNode(a);
+    }).toThrowError('Node is not attached');
+  });
+});
+
+describe('SceneGraph.disconnect', () => {
+  test('Fail if input doesn\'t exist', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.disconnect(a, 'value', b, 'INVALID_INPUT');
+    }).toThrowError('Invalid input "INVALID_INPUT"');
+  });
+
+  test('Fail if link doesn\'t exist', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.disconnect(a, 'value', b, 'a');
+    }).toThrowError('Connection value=>a doesn\'t exist');
+  });
+
+  test('Disconnect existing link', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    const c = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.attachNode(c);
+    scene.connect(a, 'value', c, 'a');
+    scene.connect(b, 'value', c, 'b');
+    scene.run(c);
+    scene.disconnect(a, 'value', c, 'a');
+    expect(() => {
+      scene.run(c);
+    }).toThrowError('Input "a" is missing');
+  });
+});
+
 describe('SceneGraph.run', () => {
   test('Trivial graph', () => {
     const scene = new SceneGraph();
@@ -154,46 +245,5 @@ describe('SceneGraph.run', () => {
     scene.connect(c, 'value', d, 'b');
     scene.run(d);
     expect(d.run).toHaveBeenCalledTimes(2);
-  });
-});
-
-describe('SceneGraph.disconnect', () => {
-  test('Fail if input doesn\'t exist', () => {
-    const scene = new SceneGraph();
-    const a = new ValueNode(10);
-    const b = new SummatorNode();
-    scene.attachNode(a);
-    scene.attachNode(b);
-    expect(() => {
-      scene.disconnect(a, 'value', b, 'INVALID_INPUT');
-    }).toThrowError('Invalid input "INVALID_INPUT"');
-  });
-
-  test('Fail if link doesn\'t exist', () => {
-    const scene = new SceneGraph();
-    const a = new ValueNode(10);
-    const b = new SummatorNode();
-    scene.attachNode(a);
-    scene.attachNode(b);
-    expect(() => {
-      scene.disconnect(a, 'value', b, 'a');
-    }).toThrowError('Connection value=>a doesn\'t exist');
-  });
-
-  test('Disconnect existing link', () => {
-    const scene = new SceneGraph();
-    const a = new ValueNode(10);
-    const b = new ValueNode(20);
-    const c = new SummatorNode();
-    scene.attachNode(a);
-    scene.attachNode(b);
-    scene.attachNode(c);
-    scene.connect(a, 'value', c, 'a');
-    scene.connect(b, 'value', c, 'b');
-    scene.run(c);
-    scene.disconnect(a, 'value', c, 'a');
-    expect(() => {
-      scene.run(c);
-    }).toThrowError('Input "a" is missing');
   });
 });

@@ -1,15 +1,35 @@
 import { assert } from '../utils';
+import SceneNode from './SceneNode';
 
 export default class SceneGraph {
   constructor() {
     this.nodes = [];
   }
 
+  isPresent(node) {
+    return this.nodes.indexOf(node) !== -1;
+  }
+
   attachNode(node) {
+    assert(!(node instanceof SceneNode), 'Invalid node');
+    assert(this.isPresent(node), 'Node is already attached');
     this.nodes.push(node);
   }
 
+  detachNode(node) {
+    assert(!(node instanceof SceneNode), 'Invalid node');
+    assert(!this.isPresent(node), 'Node is not attached');
+    for (let inputId in node.inputs) {
+      const input = node.inputs[inputId];
+      assert(input.link, 'Node is still connected');
+    }
+    this.nodes = this.nodes.filter((value) => value !== node);
+  }
+
   connect(sourceNode, sourceOut, targetNode, targetIn) {
+    assert(!this.isPresent(sourceNode), 'Source node is not attached to the scene graph');
+    assert(!this.isPresent(targetNode), 'Target node is not attached to the scene graph');
+
     const input = targetNode.inputs[targetIn];
     const output = sourceNode.outputs[sourceOut];
 
@@ -26,8 +46,6 @@ export default class SceneGraph {
       prevValue: undefined,
     };
   }
-
-  // TODO: detachNode
 
   disconnect(sourceNode, sourceOut, targetNode, targetIn) {
     const input = targetNode.inputs[targetIn];
