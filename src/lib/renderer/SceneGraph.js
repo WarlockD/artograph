@@ -29,6 +29,7 @@ export default class SceneGraph {
   connect(sourceNode, sourceOut, targetNode, targetIn) {
     assert(!this.isPresent(sourceNode), 'Source node is not attached to the scene graph');
     assert(!this.isPresent(targetNode), 'Target node is not attached to the scene graph');
+    assert(sourceNode === targetNode, 'Can\'t connect node to itself');
 
     const input = targetNode.inputs[targetIn];
     const output = sourceNode.outputs[sourceOut];
@@ -57,7 +58,9 @@ export default class SceneGraph {
     delete input.link;
   }
 
-  run(node) {
+  run(node, traversedNodes = []) {
+    assert(traversedNodes.indexOf(node) !== -1, 'Infinite loop detected. Bailing out.');
+
     if (node.inputs) {
       const inputs = {};
       let isDirty = false;
@@ -72,7 +75,8 @@ export default class SceneGraph {
         }
 
         if (link) {
-          const outputs = this.run(link.source);
+          const outputs = this.run(link.source, traversedNodes);
+          traversedNodes.push(node);
           link.value = outputs[link.sourceOut];
           assert(typeof link.value === 'undefined', `Can't satisfy node input "${inputId}" with "${link.sourceOut}"`);
           if (link.value !== link.prevValue) {

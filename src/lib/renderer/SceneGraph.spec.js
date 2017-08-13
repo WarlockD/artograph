@@ -2,11 +2,26 @@ import { assert } from '../utils';
 import SceneNode from './SceneNode';
 import SceneGraph from './SceneGraph';
 
+class TextNode extends SceneNode {
+  constructor(text) {
+    super({
+      outputs: {
+        text: { type: 'string', name: 'Text' },
+      },
+    });
+    this.text = text;
+  }
+
+  run() {
+    return { text: this.text };
+  }
+}
+
 class ValueNode extends SceneNode {
   constructor(value) {
     super({
       outputs: {
-        value: { type: 'float', name: 'Constant' },
+        value: { type: 'float', name: 'Value' },
       },
     });
     this.value = value;
@@ -84,6 +99,73 @@ describe('SceneGraph.detachNode', () => {
     expect(() => {
       scene.detachNode(a);
     }).toThrowError('Node is not attached');
+  });
+});
+
+describe('SceneGraph.connect', () => {
+  test('Fail if source node is not in graph', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(b);
+    expect(() => {
+      scene.connect(a, 'value', b, 'a');
+    }).toThrowError('Source node is not attached to the scene graph');
+  });
+
+  test('Fail if target node is not in graph', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    expect(() => {
+      scene.connect(a, 'value', b, 'a');
+    }).toThrowError('Target node is not attached to the scene graph');
+  });
+
+  test('Fail if output is missing', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.connect(a, 'INVALID_OUTPUT', b, 'a');
+    }).toThrowError('Invalid output "INVALID_OUTPUT"');
+  });
+
+  test('Fail if input is missing', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.connect(a, 'value', b, 'INVALID_INPUT');
+    }).toThrowError('Invalid input "INVALID_INPUT"');
+  });
+
+  test('Fail if input is already connected', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.connect(a, 'value', b, 'a');
+    expect(() => {
+      scene.connect(a, 'value', b, 'a');
+    }).toThrowError('Input is already connected');
+  });
+
+  test('Fail if types do not match', () => {
+    const scene = new SceneGraph();
+    const a = new TextNode('Text');
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    expect(() => {
+      scene.connect(a, 'text', b, 'a');
+    }).toThrowError('Connection text:string=>a:float is not possible');
   });
 });
 
@@ -193,6 +275,16 @@ describe('SceneGraph.run', () => {
     expect(outputs.c).toBe(20);
   });
 
+  test('Always rerun node without inputs', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    scene.attachNode(a);
+    a.run = jest.fn();
+    scene.run(a);
+    scene.run(a);
+    expect(a.run).toHaveBeenCalledTimes(2);
+  });
+
   test('Do not rerun node if inputs are not changed', () => {
     const scene = new SceneGraph();
     const a = new ValueNode(10);
@@ -245,5 +337,24 @@ describe('SceneGraph.run', () => {
     scene.connect(c, 'value', d, 'b');
     scene.run(d);
     expect(d.run).toHaveBeenCalledTimes(2);
+  });
+
+  test('Fail on infinite loops', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    const c = new SummatorNode();
+    const d = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.attachNode(c);
+    scene.attachNode(d);
+    scene.connect(a, 'value', c, 'a');
+    scene.connect(b, 'value', d, 'a');
+    scene.connect(c, 'c', d, 'b');
+    scene.connect(d, 'c', c, 'b');
+    expect(() => {
+      scene.run(d);
+    }).toThrowError('Infinite loop detected. Bailing out.');
   });
 });
