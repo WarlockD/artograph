@@ -1,11 +1,11 @@
 import { isPowerOfTwo, toPowerOfTwo } from '../math';
 
-const MAX_TEXTURE_RESOLUTION = 2048;
 
 export const canvas = document.createElement('canvas');
 export const gl = initGL(canvas);
 
-setSize(512, 512);
+const MAX_TEXTURE_RESOLUTION = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+setSize(1024, 512);
 
 function initGL(canvas) {
   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -20,15 +20,16 @@ function initGL(canvas) {
 export function setSize(width, height) {
   if (canvas.width === width && canvas.height === height) return;
 
-  const aligned = toPowerOfTwo(Math.max(width, height));
+  const aWidth = toPowerOfTwo(width);
+  const aHeight = toPowerOfTwo(height);
 
-  if (aligned > MAX_TEXTURE_RESOLUTION) {
+  if (aWidth > MAX_TEXTURE_RESOLUTION || aHeight > MAX_TEXTURE_RESOLUTION) {
     throw new Error(`Rendering of images larger than ${MAX_TEXTURE_RESOLUTION} is not supported yet.`);
   }
 
-  canvas.width = aligned;
-  canvas.height = aligned;
-  gl.viewport(0, 0, aligned, aligned);
+  canvas.width = aWidth;
+  canvas.height = aHeight;
+  gl.viewport(0, 0, aWidth, aHeight);
 }
 
 export function resizeToPowerOfTwo(image) {
