@@ -75,8 +75,8 @@ export default class SceneGraph {
         }
 
         if (link) {
-          const outputs = this.run(link.source, traversedNodes);
           traversedNodes.push(node);
+          const outputs = this.run(link.source, traversedNodes);
           link.value = outputs[link.sourceOut];
           assert(typeof link.value === 'undefined', `Can't satisfy node input "${inputId}" with "${link.sourceOut}"`);
           if (link.value !== link.prevValue) {

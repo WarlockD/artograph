@@ -52,6 +52,24 @@ class SummatorNode extends SceneNode {
   }
 }
 
+class NegateNode extends SceneNode {
+  constructor() {
+    super({
+      inputs: {
+        in: { type: 'float', name: 'Input' },
+      },
+      outputs: {
+        out: { type: 'float', name: 'Negated' },
+      },
+    });
+  }
+
+  run(inputs) {
+    assert(!inputs.in, 'Input "in" is missing');
+    return -inputs.in;
+  }
+}
+
 describe('SceneGraph.attachNode', () => {
   test('Attach valid node', () => {
     const scene = new SceneGraph();
@@ -339,22 +357,32 @@ describe('SceneGraph.run', () => {
     expect(d.run).toHaveBeenCalledTimes(2);
   });
 
-  test('Fail on infinite loops', () => {
+  test('Fail on 1 level deep infinite loop', () => {
     const scene = new SceneGraph();
-    const a = new ValueNode(10);
-    const b = new ValueNode(20);
-    const c = new SummatorNode();
-    const d = new SummatorNode();
+    const a = new NegateNode();
+    const b = new NegateNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.connect(a, 'out', b, 'in');
+    scene.connect(b, 'out', a, 'in');
+    expect(() => {
+      scene.run(b);
+    }).toThrowError('Infinite loop detected. Bailing out.');
+  });
+
+  test('Fail on 2 level deep infinite loop', () => {
+    const scene = new SceneGraph();
+    const a = new NegateNode();
+    const b = new NegateNode();
+    const c = new NegateNode();
     scene.attachNode(a);
     scene.attachNode(b);
     scene.attachNode(c);
-    scene.attachNode(d);
-    scene.connect(a, 'value', c, 'a');
-    scene.connect(b, 'value', d, 'a');
-    scene.connect(c, 'c', d, 'b');
-    scene.connect(d, 'c', c, 'b');
+    scene.connect(a, 'out', b, 'in');
+    scene.connect(b, 'out', c, 'in');
+    scene.connect(c, 'out', a, 'in');
     expect(() => {
-      scene.run(d);
+      scene.run(c);
     }).toThrowError('Infinite loop detected. Bailing out.');
   });
 });
