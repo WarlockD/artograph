@@ -5,6 +5,7 @@ import ScreenNode from './ScreenNode';
 export default class SceneGraph {
   constructor() {
     this.nodes = [];
+    this.connections = [];
     this.screenNode = null;
   }
 
@@ -54,6 +55,8 @@ export default class SceneGraph {
       value: undefined,
       prevValue: undefined,
     };
+
+    this.connections.push({ sourceNode, sourceOut, targetNode, targetIn });
   }
 
   disconnect(sourceNode, sourceOut, targetNode, targetIn) {
@@ -64,6 +67,13 @@ export default class SceneGraph {
     assert(!input.link, `Connection ${sourceOut}=>${targetIn} doesn't exist`);
 
     delete input.link;
+
+    this.connections = this.connections.filter((connection) => {
+      return connection.sourceNode !== sourceNode &&
+        connection.sourceOut !== sourceOut &&
+        connection.targetNode !== targetNode &&
+        connection.targetIn !== targetIn;
+    });
   }
 
   run(node, traversedNodes = []) {

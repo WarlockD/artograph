@@ -185,6 +185,23 @@ describe('SceneGraph.connect', () => {
       scene.connect(a, 'text', b, 'a');
     }).toThrowError('Connection text:string=>a:float is not possible');
   });
+
+  test('Expose connection', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.connect(a, 'value', b, 'a');
+    expect(scene.connections).toEqual([
+      {
+        sourceNode: a,
+        sourceOut: 'value',
+        targetNode: b,
+        targetIn: 'a',
+      }
+    ]);
+  });
 });
 
 describe('SceneGraph.disconnect', () => {
@@ -210,7 +227,7 @@ describe('SceneGraph.disconnect', () => {
     }).toThrowError('Connection value=>a doesn\'t exist');
   });
 
-  test('Disconnect existing link', () => {
+  test('Remove existing connection', () => {
     const scene = new SceneGraph();
     const a = new ValueNode(10);
     const b = new ValueNode(20);
@@ -225,6 +242,26 @@ describe('SceneGraph.disconnect', () => {
     expect(() => {
       scene.run(c);
     }).toThrowError('Input "a" is missing');
+  });
+
+  test('Remove exposed connection', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new SummatorNode();
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.connect(a, 'value', b, 'a');
+    // Ensure connection does exist
+    expect(scene.connections).toEqual([
+      {
+        sourceNode: a,
+        sourceOut: 'value',
+        targetNode: b,
+        targetIn: 'a',
+      }
+    ]);
+    scene.disconnect(a, 'value', b, 'a');
+    expect(scene.connections).toEqual([]);
   });
 });
 

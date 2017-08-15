@@ -10,7 +10,8 @@
     "test-watch": "jest --watch"
   },
   "jest": {
-    "rootDir": "src/"
+    "rootDir": "src/",
+    "setupTestFrameworkScriptFile": "<rootDir>/setupTests.js"
   },
   "repository": {
     "type": "git",
