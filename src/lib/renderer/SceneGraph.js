@@ -1,9 +1,11 @@
 import { assert } from '../utils';
 import SceneNode from './SceneNode';
+import ScreenNode from './ScreenNode';
 
 export default class SceneGraph {
   constructor() {
     this.nodes = [];
+    this.screenNode = null;
   }
 
   isPresent(node) {
@@ -14,6 +16,9 @@ export default class SceneGraph {
     assert(!(node instanceof SceneNode), 'Invalid node');
     assert(this.isPresent(node), 'Node is already attached');
     this.nodes.push(node);
+    if (node instanceof ScreenNode) {
+      this.screenNode = ScreenNode;
+    }
   }
 
   detachNode(node) {
@@ -24,6 +29,9 @@ export default class SceneGraph {
       assert(input.link, 'Node is still connected');
     }
     this.nodes = this.nodes.filter((value) => value !== node);
+    if (node instanceof ScreenNode) {
+      this.screenNode = null;
+    }
   }
 
   connect(sourceNode, sourceOut, targetNode, targetIn) {
@@ -65,6 +73,10 @@ export default class SceneGraph {
       const inputs = {};
       let isDirty = false;
 
+      if (typeof node.forwardRun === 'function') {
+        node.forwardRun();
+      }
+
       for (let inputId in node.inputs) {
         const input = node.inputs[inputId];
         const link = input.link;
@@ -77,7 +89,7 @@ export default class SceneGraph {
         if (link) {
           traversedNodes.push(node);
           const outputs = this.run(link.source, traversedNodes);
-          link.value = outputs[link.sourceOut];
+          link.value = outputs[link.sourceOut] || input.value;
           assert(typeof link.value === 'undefined', `Can't satisfy node input "${inputId}" with "${link.sourceOut}"`);
           if (link.value !== link.prevValue) {
             isDirty = true;
@@ -95,5 +107,9 @@ export default class SceneGraph {
     }
 
     return node.prevOutputs;
+  }
+
+  renderScreen() {
+    this.run(this.screenNode);
   }
 }

@@ -32,6 +32,13 @@ export function setSize(width, height) {
   gl.viewport(0, 0, aWidth, aHeight);
 }
 
+export function getSize() {
+  return {
+    width: gl.drawingBufferWidth,
+    height: gl.drawingBufferHeight,
+  };
+}
+
 export function resizeToPowerOfTwo(image) {
   const size = Math.max(image.width, image.height);
   const alignedSize = toPowerOfTwo(Math.min(MAX_TEXTURE_RESOLUTION, size));
@@ -101,13 +108,4 @@ export function createProgram(fragmentShaderSource, vertexShaderSource = passthr
   }
 
   return program;
-}
-
-export function getSize() {
-  return {
-    width: gl.drawingBufferWidth,
-    height: gl.drawingBufferHeight,
-    // Useful for comparison
-    toString: () => `${gl.drawingBufferWidth}x${gl.drawingBufferHeight}`,
-  };
 }
