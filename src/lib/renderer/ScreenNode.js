@@ -4,6 +4,7 @@ import {
   gl,
   createTexture,
   createProgram,
+  setSize
 } from './offscreenCanvas';
 
 const textureBuffer = gl.createBuffer();
@@ -26,13 +27,21 @@ const vertexData = new Float32Array([
 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 
-export default class TargetNode extends SceneNode {
+export default class ScreenNode extends SceneNode {
   constructor(targetCanvas) {
     super({
       inputs: {
         uImage: {
           type: 'sampler2D',
           name: 'Image',
+        },
+        width: {
+          type: 'float',
+          value: 512,
+        },
+        height: {
+          type: 'float',
+          value: 512,
         },
       },
     });
