@@ -38,6 +38,7 @@ gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 export default class ProgramNode extends SceneNode {
   constructor(definition) {
     super({
+      name: definition.name || 'Program',
       inputs: definition.uniforms,
       outputs: {
         result: { type: 'sampler2D', name: 'Result' },

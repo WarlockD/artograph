@@ -30,22 +30,25 @@ gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 export default class ScreenNode extends SceneNode {
   constructor(targetCanvas) {
     super({
+      name: 'Screen',
       inputs: {
         uImage: {
           type: 'sampler2D',
           name: 'Image',
         },
         width: {
+          name: 'Width',
           type: 'float',
           value: 512,
         },
         height: {
+          name: 'Height',
           type: 'float',
           value: 512,
         },
       },
     });
-    this.target = targetCanvas;
+    if (targetCanvas) this.setTarget(targetCanvas);
     this.program = createProgram(`
       precision lowp float;
 
@@ -63,6 +66,10 @@ export default class ScreenNode extends SceneNode {
     this.aTexCoord = gl.getAttribLocation(this.program, 'aTexCoord');
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
     gl.vertexAttribPointer(this.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  setTarget(target) {
+    this.target = target;
   }
 
   run(inputs) {

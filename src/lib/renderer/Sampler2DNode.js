@@ -15,6 +15,7 @@ function loadImageFromUrl(sourceUrl) {
 export default class SamplerNode extends SceneNode {
   constructor(imageUrl) {
     super({
+      name: 'Image',
       outputs: {
         texture: { type: 'sampler2D', name: 'Texture' },
       },
