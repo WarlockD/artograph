@@ -1,11 +1,10 @@
 import { isPowerOfTwo, toPowerOfTwo } from '../math';
 
-
 export const canvas = document.createElement('canvas');
 export const gl = initGL(canvas);
 
 const MAX_TEXTURE_RESOLUTION = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-setSize(1024, 512);
+setSize(512, 512);
 
 function initGL(canvas) {
   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');

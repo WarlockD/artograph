@@ -49,7 +49,7 @@ function mapPointerEvent(event) {
     _.assign(result, _.pick(event, pointDataKeys));
   }
   result.target = event.target;
-  result.originalEvent = event;
+  result.original = event;
   return result;
 }
 

@@ -1,5 +1,5 @@
-name: Colorize
-description: Apply simple color filter
+name: Mix
+description: Mix two images into single one
 uniforms:
   image1:
     name: Image 1
