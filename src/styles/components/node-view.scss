@@ -1,0 +1,71 @@
+$node-view-pin-size: floor($size-control / 2);
+
+@mixin node-view-pin($side) {
+  & .node-view-pin {
+    content: '';
+    display: block;
+    position: absolute;
+    box-sizing: border-box;
+    @if ($side == left) {
+      left: -($node-view-pin-size + $interval-component + 1);
+    } @else {
+      right: -($node-view-pin-size + $interval-component + 1);
+    }
+    top: floor($node-view-pin-size / 4);
+    width: $node-view-pin-size;
+    height: $node-view-pin-size;
+    border-radius: 50%;
+    border: 1px solid $palette-primary;
+    background-color: $palette-background;
+
+    &.active {
+      box-shadow: inset 0 0 0 $node-view-pin-size $palette-primary;
+    }
+  }
+}
+
+.node-view {
+  display: inline-block;
+  position: absolute;
+  min-width: 100px;
+  border: 1px solid $palette-primary;
+
+  .node-view-header {
+    user-select: none;
+    min-height: $size-text;
+    padding: 0 $interval-component;
+    color: $palette-foreground-inverse;
+    background-color: $palette-primary;
+  }
+
+  .node-view-body {
+    background-color: $palette-background;
+  }
+
+  .node-view-pins {
+    padding: $interval-component $interval-block;
+    list-style: none;
+
+    &:empty {
+      display: none;
+    }
+
+    li {
+      position: relative;
+    }
+  }
+
+  .node-view-inputs {
+    li {
+      text-align: left;
+      @include node-view-pin(left);
+    }
+  }
+
+  .node-view-outputs {
+    li {
+      text-align: right;
+      @include node-view-pin(right);
+    }
+  }
+}
