@@ -36,6 +36,14 @@ export default class SceneGraph {
   }
 
   connect(sourceNode, sourceOut, targetNode, targetIn) {
+    if (arguments.length === 1) {
+      const connection = sourceNode;
+      sourceNode = connection.sourceNode;
+      sourceOut = connection.sourceOut;
+      targetNode = connection.targetNode;
+      targetIn = connection.targetIn;
+    }
+
     assert(!this.isPresent(sourceNode), 'Source node is not attached to the scene graph');
     assert(!this.isPresent(targetNode), 'Target node is not attached to the scene graph');
     assert(sourceNode === targetNode, 'Can\'t connect node to itself');
@@ -60,8 +68,15 @@ export default class SceneGraph {
   }
 
   disconnect(sourceNode, sourceOut, targetNode, targetIn) {
+    if (arguments.length === 1) {
+      const connection = sourceNode;
+      sourceNode = connection.sourceNode;
+      sourceOut = connection.sourceOut;
+      targetNode = connection.targetNode;
+      targetIn = connection.targetIn;
+    }
+
     const input = targetNode.inputs[targetIn];
-    const output = sourceNode.outputs[sourceOut];
 
     assert(!input, `Invalid input "${targetIn}"`);
     assert(!input.link, `Connection ${sourceOut}=>${targetIn} doesn't exist`);
@@ -69,10 +84,10 @@ export default class SceneGraph {
     delete input.link;
 
     this.connections = this.connections.filter((connection) => {
-      return connection.sourceNode !== sourceNode &&
-        connection.sourceOut !== sourceOut &&
-        connection.targetNode !== targetNode &&
-        connection.targetIn !== targetIn;
+      return !(connection.sourceNode === sourceNode &&
+        connection.sourceOut === sourceOut &&
+        connection.targetNode === targetNode &&
+        connection.targetIn === targetIn);
     });
   }
 
