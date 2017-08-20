@@ -138,6 +138,14 @@ export default class ImageContainer extends React.Component {
     const actionsClass = classes('image-container-actions', 'hide-sm', activeClass);
     const bgButtonClass = classes('button bg-button', activeClass);
     const colorButtonsClass = classes('color-buttons', activeClass);
+    let compactModeButton = null;
+    if (this.props.toggleCompactMode) {
+      compactModeButton = <button
+        className='button hide-ui-button'
+        title='Hide interface'
+        onClick={this.props.toggleCompactMode}>
+      </button>
+    }
     return (
       <div className='image-container'>
         <div
@@ -158,11 +166,7 @@ export default class ImageContainer extends React.Component {
           </div>
         </div>
         <div className={actionsClass}>
-          <button
-            className='button hide-ui-button'
-            title='Hide interface'
-            onClick={this.props.toggleCompactMode}>
-          </button>
+          {compactModeButton}
           <button
             className={bgButtonClass}
             title='Change background color'

@@ -4,30 +4,87 @@ import NodeView from './NodeView';
 
 class PinsRegistry {
   constructor() {
-    this.pins = new Map();
+    this.index = new Map();
+    this.pins = [];
   }
 
-  updatePin(node, pin, position) {
-    if (!this.pins.has(node)) {
-      this.pins.set(node, { [pin]: position });
+  updatePin(node, pinName, position) {
+    let nodePins = this.index.get(node) || {};
+
+    if (nodePins[pinName]) {
+      nodePins[pinName].x = position.x;
+      nodePins[pinName].y = position.y;
     } else {
-      this.pins.get(node)[pin] = position;
+      nodePins[pinName] = {
+        node: node,
+        pinName: pinName,
+        output: node.outputs && pinName in node.outputs,
+        x: position.x,
+        y: position.y,
+      };
+      this.pins.push(nodePins[pinName]);
     }
+
+    this.index.set(node, nodePins);
   }
 
   getPin(node, pin) {
-    const nodePins = this.pins.get(node);
+    const nodePins = this.index.get(node);
     if (!nodePins) return;
     const element = nodePins[pin];
     return element;
   }
 
   unregisterPins(node) {
-    this.pins.delete(node);
+    this.index.delete(node);
+    this.pins = this.pins.filter((pin) => {
+      return pin.node !== node;
+    });
+  }
+
+  getPinsNear(px, py, radius) {
+    return this.pins
+      .reduce((acc, pin) => {
+        const dx = pin.x - px;
+        const dy = pin.y - py;
+        const distance =  Math.sqrt(dx * dx + dy * dy);
+        if (distance <= radius) {
+          acc.push({ ...pin, distance });
+        }
+        return acc;
+      }, [])
+      .sort((a, b) => {
+        return a.distance - b.distance;
+      });
+  }
+
+  getPinNear(px, py, radius) {
+    const pins = this.getPinsNear(px, py, radius);
+    if (pins.length > 0) return pins[0];
+  }
+}
+
+class Pin extends React.Component {
+  update() {
+    this.forceUpdate();
+  }
+
+  render () {
+    const pin = this.props.pin;
+    const cx = pin.x;
+    const cy = pin.y;
+
+    return <g className='graph-view-pin'>
+      <circle onMouseDown={this.props.onDragStart} cx={cx} cy={cy} r='7' />
+    </g>
   }
 }
 
 class Connection extends React.Component {
+  update() {
+    this.forceUpdate();
+  }
+
   render() {
     const connection = this.props.connection;
     const pins = this.props.pins;
@@ -42,14 +99,90 @@ class Connection extends React.Component {
 
     const center = o.x + (i.x - o.x) / 2;
     const pathPoints = `M ${o.x} ${o.y} C ${center} ${o.y} ${center} ${i.y} ${i.x} ${i.y}`;
-    return <g>
+    return <g className='graph-view-connection'>
       <path d={pathPoints} />
+      <circle
+        onMouseDown={() => this.props.onDragStart(connection, true)}
+        cx={o.x}
+        cy={o.y}
+        r='7'/>
+      <circle
+        onMouseDown={() => this.props.onDragStart(connection, false)}
+        cx={i.x}
+        cy={i.y}
+        r='7'/>
     </g>;
   }
 }
 
+class CandidateConnection extends React.Component {
+  state = {
+    posX: 0,
+    posY: 0,
+  };
+
+  componentDidMount() {
+    const onMove = (event) => {
+      this.setState({
+        posX: event.clientX,
+        posY: event.clientY,
+      });
+    }
+
+    const onEnd = (event) => {
+      document.removeEventListener('mousemove', onMove, { capture: true });
+      document.removeEventListener('mouseup', onEnd);
+      const pin = this.props.pins.getPinNear(event.clientX, event.clientY, 10);
+
+      if (!pin) return this.props.onDragEnd(null);
+
+      const candidate = this.props.candidate;
+
+      if (candidate.sourceNode) {
+        this.props.onDragEnd({
+          sourceNode: candidate.sourceNode,
+          sourceOut: candidate.sourceOut,
+          targetNode: pin.node,
+          targetIn: pin.pinName,
+        });
+      } else {
+        this.props.onDragEnd({
+          sourceNode: pin.node,
+          sourceOut: pin.pinName,
+          targetNode: candidate.targetNode,
+          targetIn: candidate.targetIn,
+        });
+      }
+    }
+
+    document.addEventListener('mousemove', onMove, { capture: true });
+    document.addEventListener('mouseup', onEnd);
+
+    this.setState({
+      posX: event.clientX,
+      posY: event.clientY,
+    });
+  }
+
+  render() {
+    const candidate = this.props.candidate;
+    const o = candidate.pinPosition;
+    const i = { x: this.state.posX, y: this.state.posY };
+    const center = o.x + (i.x - o.x) / 2;
+    const pathPoints = `M ${o.x} ${o.y} C ${center} ${o.y} ${center} ${i.y} ${i.x} ${i.y}`;
+    return <g className='graph-view-connection'>
+      <path d={pathPoints} />
+      <circle cx={o.x} cy={o.y} r='7'/>
+      <circle cx={i.x} cy={i.y} r='7'/>
+    </g>
+  }
+}
+
 export default class GraphView extends React.Component {
-  pins = new PinsRegistry();
+  pinsRegistry = new PinsRegistry();
+  state = {
+    candidateConnection: null,
+  };
 
   componentDidMount() {
     // FIXME: This is one solution to problem I have with connections rendering:
@@ -63,29 +196,103 @@ export default class GraphView extends React.Component {
 
   handleNodeUpdate(node) {
     const connections = this.props.graph.connections;
+    const pins = this.pinsRegistry.pins;
 
     for (let i = 0, len = connections.length; i < len; i += 1) {
       const connection = connections[i];
-      if (connection.sourceNode === node || connection.targetNode === node) {
-        connection.uiElement.forceUpdate();
+      const updateNeeded = (connection.sourceNode === node || connection.targetNode === node) &&
+        connection.uiElement;
+      if (updateNeeded) {
+        connection.uiElement.update();
       }
     }
+
+    for (let i = 0, len = pins.length; i < len; i += 1) {
+      const pin = pins[i];
+
+      if (pin.uiElement) {
+        pin.uiElement.update();
+      }
+    }
+  }
+
+  @bound
+  handleConnectionDragStart(connection, editOutput) {
+    this.props.graph.disconnect(connection);
+    let candidateConnection;
+
+    if (editOutput) {
+      candidateConnection = {
+        targetNode: connection.targetNode,
+        targetIn: connection.targetIn,
+        pinPosition: this.pinsRegistry.getPin(connection.targetNode, connection.targetIn),
+      };
+    } else {
+      candidateConnection = {
+        sourceNode: connection.sourceNode,
+        sourceOut: connection.sourceOut,
+        pinPosition: this.pinsRegistry.getPin(connection.sourceNode, connection.sourceOut),
+      };
+    }
+
+    this.setState({ candidateConnection });
+  }
+
+  @bound
+  handleConnectionDragEnd(connection) {
+    try {
+      if (connection) this.props.graph.connect(connection);
+    } catch (e) {
+      console.error(e);
+    }
+
+    this.setState({ candidateConnection: null });
+  }
+
+  handleConnectionAddStart(pin) {
+    const candidateConnection = pin.output
+      ? { sourceNode: pin.node, sourceOut: pin.pinName, pinPosition: pin }
+      : { targetNode: pin.node, targetIn: pin.pinName, pinPosition: pin };
+    this.setState({ candidateConnection });
   }
 
   renderConnections(connections) {
     const result = [];
 
     for (let i = 0, len = connections.length; i < len; i += 1) {
-      result[i] = <Connection
+      result.push(<Connection
         key={i}
         ref={(element) => connections[i].uiElement = element}
+        onDragStart={this.handleConnectionDragStart}
         connection={connections[i]}
-        pins={this.pins}/>
+        pins={this.pinsRegistry}/>);
     }
 
-    return <svg className='graph-view-connections'>
-      {result}
-    </svg>
+    if (this.state.candidateConnection) {
+      result.push(<CandidateConnection
+        key={result.length}
+        candidate={this.state.candidateConnection}
+        onDragEnd={this.handleConnectionDragEnd}
+        pins={this.pinsRegistry}/>);
+    }
+
+    return result;
+  }
+
+  renderPins(pins) {
+    const result = [];
+
+    for (let i = 0, len = pins.length; i < len; i += 1) {
+      const pin = pins[i];
+
+      result.push(<Pin
+        key={i}
+        ref={(element) => pins[i].uiElement = element}
+        onDragStart={() => this.handleConnectionAddStart(pin)}
+        pin={pin}/>);
+    }
+
+    return result;
   }
 
   renderNodes(nodes) {
@@ -94,7 +301,7 @@ export default class GraphView extends React.Component {
         key={index}
         node={node}
         onNodeUpdate={() => this.handleNodeUpdate(node)}
-        pins={this.pins}/>
+        pins={this.pinsRegistry}/>
     });
   }
 
@@ -102,8 +309,11 @@ export default class GraphView extends React.Component {
     const graph = this.props.graph;
 
     return <div className='graph-view'>
-      {this.renderConnections(graph.connections)}
       {this.renderNodes(graph.nodes)}
+      <svg className='graph-view-connections'>
+        {this.renderPins(this.pinsRegistry.pins)}
+        {this.renderConnections(graph.connections)}
+      </svg>
     </div>
   }
 }

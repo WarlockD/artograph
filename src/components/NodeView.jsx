@@ -1,5 +1,6 @@
 import React from 'react';
 import { bound, dragHelper } from '../lib/utils';
+import { align } from '../lib/math';
 
 export default class NodeView extends React.Component {
   state = {
@@ -23,20 +24,17 @@ export default class NodeView extends React.Component {
     }
   });
 
-  updatePin(node, pinName, pinElement) {
-    const rect = pinElement.getBoundingClientRect();
-    this.props.pins.updatePin(this.props.node, pinName, {
-      x: rect.left + rect.width / 2,
-      y: rect.top + rect.height / 2,
-    });
-  }
-
   updateAllPins() {
     const node = this.props.node;
     const pins = this.nodeBody.querySelectorAll('.node-view-pin');
     for (let i = 0, len = pins.length; i < len; i += 1) {
       const pin = pins[i];
-      this.updatePin(node, pin.dataset.pinName, pin);
+      const pinName = pin.dataset.pinName;
+      const rect = pin.getBoundingClientRect();
+      this.props.pins.updatePin(node, pinName, {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
     }
     this.props.onNodeUpdate(node);
   }
@@ -53,6 +51,10 @@ export default class NodeView extends React.Component {
     }
 
     return result;
+  }
+
+  componentDidMount() {
+    this.updateAllPins();
   }
 
   componentDidUpdate() {
