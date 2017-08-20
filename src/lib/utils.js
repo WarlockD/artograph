@@ -79,11 +79,17 @@ export function dragHelper(options) {
 
     function onDragEnd(event) {
       onEnd(event);
-      document.removeEventListener(eventNames[0], onDragMove, { passive: false });
+      document.removeEventListener(eventNames[0], onDragMove, {
+        capture: true,
+        passive: false,
+      });
       document.removeEventListener(eventNames[1], onDragEnd);
     }
 
-    document.addEventListener(eventNames[0], onDragMove, { passive: false });
+    document.addEventListener(eventNames[0], onDragMove, {
+      capture: true,
+      passive: false,
+    });
     document.addEventListener(eventNames[1], onDragEnd);
   }
 }
