@@ -1,11 +1,14 @@
 name: Bokeh Blur
 uniforms:
-  - name: Bokeh
-    id: uBokeh
+  uInput:
+    name: Input
+    type: sampler2D
+  uBokeh:
+    name: Bokeh
     type: float
     default: 0.5
-  - name: Radius
-    id: uRadius
+  uRadius:
+    name: Radius
     type: float
     max: 0.15
     default: 0.005
@@ -13,7 +16,7 @@ prelude: |
   precision lowp float;
 
   varying vec2 vUv;
-  uniform sampler2D uImage;
+  uniform sampler2D uInput;
   uniform float uBokeh;
   uniform float uRadius;
   uniform vec2 iCanvasResolution;
@@ -29,7 +32,7 @@ prelude: |
     for (float i = -1.0; i < 1.0; i += 2.0 / uSamples) {
       vec2 uv = p + dir * i;
       if (uv.x > 0.0 && uv.y > 0.0 && uv.x < bounds.x && uv.y < bounds.y) {
-        vec4 sample = texture2D(uImage, uv);
+        vec4 sample = texture2D(uInput, uv);
         sum += sample;
         maxs = max(sample, maxs);
         total += 1.0;

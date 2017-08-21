@@ -39,12 +39,12 @@ export default class ScreenNode extends SceneNode {
         width: {
           name: 'Width',
           type: 'float',
-          value: 512,
+          value: 2048,
         },
         height: {
           name: 'Height',
           type: 'float',
-          value: 512,
+          value: 2048,
         },
       },
     });

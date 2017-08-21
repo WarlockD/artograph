@@ -2,8 +2,41 @@ import { assert } from '../utils';
 import SceneNode from './SceneNode';
 import ScreenNode from './ScreenNode';
 
-export default class SceneGraph {
+class EventEmitter {
   constructor() {
+    this.listeners = {};
+  }
+
+  on(eventName, listener) {
+    this.listeners[eventName] = this.listeners[eventName] || [];
+    this.listeners[eventName].push(listener);
+  }
+
+  off(eventName, listener) {
+    const listeners = this.listeners[eventName];
+
+    if (!listeners) throw new Error(`There is no listeners for "${eventName}"`);
+
+    this.listeners[eventName] = listeners.filter((existingListener) => {
+      return existingListener !== listener;
+    });
+  }
+
+  emit(eventName, ...params) {
+    const listeners = this.listeners[eventName];
+
+    if (!listeners) return;
+
+    for (let i = 0, len = listeners.length; i < len; i += 1) {
+      const listener = listeners[i];
+      listener(...params);
+    }
+  }
+}
+
+export default class SceneGraph extends EventEmitter {
+  constructor() {
+    super();
     this.nodes = [];
     this.connections = [];
     this.screenNode = null;
@@ -65,6 +98,7 @@ export default class SceneGraph {
     };
 
     this.connections.push({ sourceNode, sourceOut, targetNode, targetIn });
+    this.emit('topology.changed');
   }
 
   disconnect(sourceNode, sourceOut, targetNode, targetIn) {
@@ -92,7 +126,9 @@ export default class SceneGraph {
   }
 
   run(node, traversedNodes = []) {
-    assert(traversedNodes.indexOf(node) !== -1, 'Infinite loop detected. Bailing out.');
+    if (traversedNodes.indexOf(node) !== -1) {
+      return node.prevOutputs;
+    }
 
     if (node.inputs) {
       const inputs = {};
@@ -112,10 +148,9 @@ export default class SceneGraph {
         }
 
         if (link) {
-          traversedNodes.push(node);
           const outputs = this.run(link.source, traversedNodes);
           link.value = outputs[link.sourceOut] || input.value;
-          assert(typeof link.value === 'undefined', `Can't satisfy node input "${inputId}" with "${link.sourceOut}"`);
+          // assert(typeof link.value === 'undefined', `Can't satisfy node input "${inputId}" with "${link.sourceOut}"`);
           if (link.value !== link.prevValue) {
             isDirty = true;
             link.prevValue = link.value;
@@ -124,9 +159,11 @@ export default class SceneGraph {
         }
       }
 
-      if (isDirty) {
-        node.prevOutputs = node.run(inputs);
-      }
+      node.prevOutputs = node.run(inputs);
+
+      traversedNodes.push(node);
+      // if (isDirty) {
+      // }
     } else {
       node.prevOutputs = node.run();
     }

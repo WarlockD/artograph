@@ -1,8 +1,11 @@
 name: Colorize
 description: Apply simple color filter
 uniforms:
-  - name: Color
-    id: uColor
+  uImage:
+    name: Image
+    type: sampler2D
+  uColor:
+    name: Color
     type: color
     default: [0.4, 1.0, 0.2]
 shader: |

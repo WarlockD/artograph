@@ -84,7 +84,6 @@ export default class ProgramNode extends SceneNode {
     gl.enableVertexAttribArray(this.aTexCoord);
 
     let activeTexture = 0;
-    let rendererSize = 512;
     for (let inputId in this.inputs) {
       const location = gl.getUniformLocation(this.program, inputId);
       const input = this.inputs[inputId];
