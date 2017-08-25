@@ -8,6 +8,7 @@ import Sampler2DNode from './lib/renderer/Sampler2DNode';
 import ProgramNode from './lib/renderer/ProgramNode';
 import ScreenNode from './lib/renderer/ScreenNode';
 import SceneNode from './lib/renderer/SceneNode';
+import SinOscNode from './lib/renderer/SinOscNode';
 
 import ImageContainer from './components/ImageContainer';
 import GraphView from './components/GraphView';
@@ -46,6 +47,7 @@ class SinNode extends SceneNode {
         in: {
           name: 'x',
           type: 'float',
+          value: 0.5,
         }
       },
       outputs: {
@@ -89,6 +91,7 @@ const mix = new ProgramNode(mixFx);
 const screen = new ScreenNode();
 const timer = new TimeNode();
 const sinus = new SinNode();
+const osc = new SinOscNode();
 
 scene.attachNode(spice);
 scene.attachNode(testImage);
@@ -96,7 +99,7 @@ scene.attachNode(mix);
 scene.attachNode(screen);
 scene.attachNode(timer);
 scene.attachNode(sinus);
-
+scene.attachNode(osc);
 
 class Page extends React.Component {
   async componentDidMount() {

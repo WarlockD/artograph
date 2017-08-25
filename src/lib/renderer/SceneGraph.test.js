@@ -196,9 +196,9 @@ describe('SceneGraph.connect', () => {
     expect(scene.connections).toEqual([
       {
         sourceNode: a,
-        sourceOut: 'value',
+        sourcePin: 'value',
         targetNode: b,
-        targetIn: 'a',
+        targetPin: 'a',
       }
     ]);
   });
@@ -255,9 +255,9 @@ describe('SceneGraph.disconnect', () => {
     expect(scene.connections).toEqual([
       {
         sourceNode: a,
-        sourceOut: 'value',
+        sourcePin: 'value',
         targetNode: b,
-        targetIn: 'a',
+        targetPin: 'a',
       }
     ]);
     scene.disconnect(a, 'value', b, 'a');

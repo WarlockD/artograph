@@ -6,4 +6,12 @@ export default class SceneNode {
     this.inputs = cloneDeep(schema.inputs);
     this.outputs = cloneDeep(schema.outputs);
   }
+
+  onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin) {
+    // Do nothing by default
+  }
+
+  onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin) {
+    // Do nothing by default
+  }
 }

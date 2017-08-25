@@ -68,60 +68,66 @@ export default class SceneGraph extends EventEmitter {
     }
   }
 
-  connect(sourceNode, sourceOut, targetNode, targetIn) {
+  connect(sourceNode, sourcePin, targetNode, targetPin) {
     if (arguments.length === 1) {
       const connection = sourceNode;
       sourceNode = connection.sourceNode;
-      sourceOut = connection.sourceOut;
+      sourcePin = connection.sourcePin;
       targetNode = connection.targetNode;
-      targetIn = connection.targetIn;
+      targetPin = connection.targetPin;
     }
 
     assert(!this.isPresent(sourceNode), 'Source node is not attached to the scene graph');
     assert(!this.isPresent(targetNode), 'Target node is not attached to the scene graph');
     assert(sourceNode === targetNode, 'Can\'t connect node to itself');
 
-    const input = targetNode.inputs[targetIn];
-    const output = sourceNode.outputs[sourceOut];
+    const input = targetNode.inputs[targetPin];
+    const output = sourceNode.outputs[sourcePin];
 
-    assert(!input, `Invalid input "${targetIn}"`);
-    assert(!output, `Invalid output "${sourceOut}"`);
-    assert(input.type !== output.type, `Connection ${sourceOut}:${output.type}=>${targetIn}:${input.type} is not possible`);
+    assert(!input, `Invalid input "${targetPin}"`);
+    assert(!output, `Invalid output "${sourcePin}"`);
+    assert(input.type !== output.type, `Connection ${sourcePin}:${output.type}=>${targetPin}:${input.type} is not possible`);
     assert(input.link, 'Input is already connected');
+
+    sourceNode.onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin);
+    targetNode.onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin);
 
     input.prevLink = input.link;
     input.link = {
       source: sourceNode,
-      sourceOut: sourceOut,
+      sourcePin: sourcePin,
       value: undefined,
       prevValue: undefined,
     };
 
-    this.connections.push({ sourceNode, sourceOut, targetNode, targetIn });
+    this.connections.push({ sourceNode, sourcePin, targetNode, targetPin });
     this.emit('topology.changed');
   }
 
-  disconnect(sourceNode, sourceOut, targetNode, targetIn) {
+  disconnect(sourceNode, sourcePin, targetNode, targetPin) {
     if (arguments.length === 1) {
       const connection = sourceNode;
       sourceNode = connection.sourceNode;
-      sourceOut = connection.sourceOut;
+      sourcePin = connection.sourcePin;
       targetNode = connection.targetNode;
-      targetIn = connection.targetIn;
+      targetPin = connection.targetPin;
     }
 
-    const input = targetNode.inputs[targetIn];
+    const input = targetNode.inputs[targetPin];
 
-    assert(!input, `Invalid input "${targetIn}"`);
-    assert(!input.link, `Connection ${sourceOut}=>${targetIn} doesn't exist`);
+    assert(!input, `Invalid input "${targetPin}"`);
+    assert(!input.link, `Connection ${sourcePin}=>${targetPin} doesn't exist`);
+
+    sourceNode.onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin);
+    targetNode.onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin);
 
     delete input.link;
 
     this.connections = this.connections.filter((connection) => {
       return !(connection.sourceNode === sourceNode &&
-        connection.sourceOut === sourceOut &&
+        connection.sourcePin === sourcePin &&
         connection.targetNode === targetNode &&
-        connection.targetIn === targetIn);
+        connection.targetPin === targetPin);
     });
   }
 
@@ -149,13 +155,14 @@ export default class SceneGraph extends EventEmitter {
 
         if (link) {
           const outputs = this.run(link.source, traversedNodes);
-          link.value = outputs[link.sourceOut] || input.value;
-          // assert(typeof link.value === 'undefined', `Can't satisfy node input "${inputId}" with "${link.sourceOut}"`);
+          link.value = outputs[link.sourcePin];
           if (link.value !== link.prevValue) {
             isDirty = true;
             link.prevValue = link.value;
           }
           inputs[inputId] = link.value;
+        } else {
+          inputs[inputId] = input.value;
         }
       }
 

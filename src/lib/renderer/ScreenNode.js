@@ -2,10 +2,11 @@ import SceneNode from './SceneNode';
 import {
   canvas,
   gl,
-  createTexture,
   createProgram,
-  setSize
 } from './offscreenCanvas';
+import {
+  audio,
+} from './audioEngine';
 
 const textureBuffer = gl.createBuffer();
 const textureData = new Float32Array([
@@ -36,6 +37,10 @@ export default class ScreenNode extends SceneNode {
           type: 'sampler2D',
           name: 'Image',
         },
+        sound: {
+          type: 'sound',
+          name: 'Sound',
+        },
         width: {
           name: 'Width',
           type: 'float',
@@ -48,7 +53,9 @@ export default class ScreenNode extends SceneNode {
         },
       },
     });
+
     if (targetCanvas) this.setTarget(targetCanvas);
+
     this.program = createProgram(`
       precision lowp float;
 
@@ -59,13 +66,18 @@ export default class ScreenNode extends SceneNode {
         gl_FragColor = texture2D(uImage, vUv, 0.0);
       }
     `);
+
     this.uImage = gl.getUniformLocation(this.program, 'uImage');
+
     this.aPosition = gl.getAttribLocation(this.program, 'aPosition');
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.vertexAttribPointer(this.aPosition, 3, gl.FLOAT, false, 0, 0);
+
     this.aTexCoord = gl.getAttribLocation(this.program, 'aTexCoord');
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
     gl.vertexAttribPointer(this.aTexCoord, 2, gl.FLOAT, false, 0, 0);
+
+    this.audioNode = audio.destination;
   }
 
   setTarget(target) {

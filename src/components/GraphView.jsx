@@ -90,11 +90,11 @@ class Connection extends React.Component {
     const pins = this.props.pins;
 
     // Output pin position
-    const o = pins.getPin(connection.sourceNode, connection.sourceOut);
+    const o = pins.getPin(connection.sourceNode, connection.sourcePin);
     if (!o) return null;
 
     // Input pin position
-    const i = pins.getPin(connection.targetNode, connection.targetIn);
+    const i = pins.getPin(connection.targetNode, connection.targetPin);
     if (!i) return null;
 
     const center = o.x + (i.x - o.x) / 2;
@@ -141,16 +141,16 @@ class CandidateConnection extends React.Component {
       if (candidate.sourceNode) {
         this.props.onDragEnd({
           sourceNode: candidate.sourceNode,
-          sourceOut: candidate.sourceOut,
+          sourcePin: candidate.sourcePin,
           targetNode: pin.node,
-          targetIn: pin.pinName,
+          targetPin: pin.pinName,
         });
       } else {
         this.props.onDragEnd({
           sourceNode: pin.node,
-          sourceOut: pin.pinName,
+          sourcePin: pin.pinName,
           targetNode: candidate.targetNode,
-          targetIn: candidate.targetIn,
+          targetPin: candidate.targetPin,
         });
       }
     }
@@ -224,14 +224,14 @@ export default class GraphView extends React.Component {
     if (editOutput) {
       candidateConnection = {
         targetNode: connection.targetNode,
-        targetIn: connection.targetIn,
-        pinPosition: this.pinsRegistry.getPin(connection.targetNode, connection.targetIn),
+        targetPin: connection.targetPin,
+        pinPosition: this.pinsRegistry.getPin(connection.targetNode, connection.targetPin),
       };
     } else {
       candidateConnection = {
         sourceNode: connection.sourceNode,
-        sourceOut: connection.sourceOut,
-        pinPosition: this.pinsRegistry.getPin(connection.sourceNode, connection.sourceOut),
+        sourcePin: connection.sourcePin,
+        pinPosition: this.pinsRegistry.getPin(connection.sourceNode, connection.sourcePin),
       };
     }
 
@@ -251,8 +251,8 @@ export default class GraphView extends React.Component {
 
   handleConnectionAddStart(pin) {
     const candidateConnection = pin.output
-      ? { sourceNode: pin.node, sourceOut: pin.pinName, pinPosition: pin }
-      : { targetNode: pin.node, targetIn: pin.pinName, pinPosition: pin };
+      ? { sourceNode: pin.node, sourcePin: pin.pinName, pinPosition: pin }
+      : { targetNode: pin.node, targetPin: pin.pinName, pinPosition: pin };
     this.setState({ candidateConnection });
   }
 
