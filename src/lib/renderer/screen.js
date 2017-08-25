@@ -2,6 +2,7 @@ import { isPowerOfTwo, toPowerOfTwo } from '../math';
 
 export const canvas = document.createElement('canvas');
 export const gl = initGL(canvas);
+export const audio = initAudio();
 
 const MAX_TEXTURE_RESOLUTION = gl.getParameter(gl.MAX_TEXTURE_SIZE);
 setSize(1024, 1024);
@@ -14,6 +15,14 @@ function initGL(canvas) {
   }
 
   return gl;
+}
+
+function initAudio() {
+  if (!window.AudioContext) {
+    throw new Error('WebAudio is not supported');
+  }
+
+  return new window.AudioContext();
 }
 
 export function setSize(width, height) {

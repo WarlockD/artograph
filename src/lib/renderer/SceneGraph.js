@@ -1,38 +1,6 @@
 import { assert } from '../utils';
 import SceneNode from './SceneNode';
-import ScreenNode from './ScreenNode';
-
-class EventEmitter {
-  constructor() {
-    this.listeners = {};
-  }
-
-  on(eventName, listener) {
-    this.listeners[eventName] = this.listeners[eventName] || [];
-    this.listeners[eventName].push(listener);
-  }
-
-  off(eventName, listener) {
-    const listeners = this.listeners[eventName];
-
-    if (!listeners) throw new Error(`There is no listeners for "${eventName}"`);
-
-    this.listeners[eventName] = listeners.filter((existingListener) => {
-      return existingListener !== listener;
-    });
-  }
-
-  emit(eventName, ...params) {
-    const listeners = this.listeners[eventName];
-
-    if (!listeners) return;
-
-    for (let i = 0, len = listeners.length; i < len; i += 1) {
-      const listener = listeners[i];
-      listener(...params);
-    }
-  }
-}
+import EventEmitter from './EventEmitter';
 
 export default class SceneGraph extends EventEmitter {
   constructor() {
@@ -50,22 +18,18 @@ export default class SceneGraph extends EventEmitter {
     assert(!(node instanceof SceneNode), 'Invalid node');
     assert(this.isPresent(node), 'Node is already attached');
     this.nodes.push(node);
-    if (node instanceof ScreenNode) {
-      this.screenNode = ScreenNode;
-    }
+    this.emit('node.attached', node);
   }
 
   detachNode(node) {
     assert(!(node instanceof SceneNode), 'Invalid node');
     assert(!this.isPresent(node), 'Node is not attached');
-    for (let inputId in node.inputs) {
-      const input = node.inputs[inputId];
-      assert(input.link, 'Node is still connected');
-    }
+    const isConnected = this.connections.some((connection) => {
+      return connection.sourceNode === node || connection.targetNode === node;
+    });
+    assert(isConnected, 'Node is still connected');
     this.nodes = this.nodes.filter((value) => value !== node);
-    if (node instanceof ScreenNode) {
-      this.screenNode = null;
-    }
+    this.emit('node.detached', node);
   }
 
   connect(sourceNode, sourcePin, targetNode, targetPin) {
@@ -100,8 +64,9 @@ export default class SceneGraph extends EventEmitter {
       prevValue: undefined,
     };
 
-    this.connections.push({ sourceNode, sourcePin, targetNode, targetPin });
-    this.emit('topology.changed');
+    const connection = { sourceNode, sourcePin, targetNode, targetPin };
+    this.connections.push(connection);
+    this.emit('node.connected', connection);
   }
 
   disconnect(sourceNode, sourcePin, targetNode, targetPin) {
@@ -123,12 +88,15 @@ export default class SceneGraph extends EventEmitter {
 
     delete input.link;
 
-    this.connections = this.connections.filter((connection) => {
-      return !(connection.sourceNode === sourceNode &&
+    const connectionIndex = this.connections.findIndex((connection) => {
+      return (connection.sourceNode === sourceNode &&
         connection.sourcePin === sourcePin &&
         connection.targetNode === targetNode &&
         connection.targetPin === targetPin);
     });
+    const connection = this.connections[connectionIndex];
+    this.connections.splice(connectionIndex, 1);
+    this.emit('node.disconnected', connection);
   }
 
   run(node, traversedNodes = []) {
@@ -140,9 +108,7 @@ export default class SceneGraph extends EventEmitter {
       const inputs = {};
       let isDirty = false;
 
-      if (typeof node.forwardRun === 'function') {
-        node.forwardRun();
-      }
+      node.onBeforeRun();
 
       for (let inputId in node.inputs) {
         const input = node.inputs[inputId];
@@ -155,12 +121,14 @@ export default class SceneGraph extends EventEmitter {
 
         if (link) {
           const outputs = this.run(link.source, traversedNodes);
-          link.value = outputs[link.sourcePin];
-          if (link.value !== link.prevValue) {
-            isDirty = true;
-            link.prevValue = link.value;
+          if (outputs) {
+            link.value = outputs[link.sourcePin];
+            if (link.value !== link.prevValue) {
+              isDirty = true;
+              link.prevValue = link.value;
+            }
+            inputs[inputId] = link.value;
           }
-          inputs[inputId] = link.value;
         } else {
           inputs[inputId] = input.value;
         }
@@ -176,9 +144,5 @@ export default class SceneGraph extends EventEmitter {
     }
 
     return node.prevOutputs;
-  }
-
-  renderScreen() {
-    this.run(this.screenNode);
   }
 }
