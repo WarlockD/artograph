@@ -90,10 +90,6 @@ const screen = new ScreenNode();
 const timer = new TimeNode();
 const sinus = new SinNode();
 
-for (let i = 0; i < 20; i += 1) {
-  scene.attachNode(new ProgramNode(mblurFx));
-}
-
 scene.attachNode(spice);
 scene.attachNode(testImage);
 scene.attachNode(mix);

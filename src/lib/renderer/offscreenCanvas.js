@@ -4,7 +4,7 @@ export const canvas = document.createElement('canvas');
 export const gl = initGL(canvas);
 
 const MAX_TEXTURE_RESOLUTION = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-setSize(2048, 2048);
+setSize(1024, 1024);
 
 function initGL(canvas) {
   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
