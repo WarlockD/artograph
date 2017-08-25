@@ -1,9 +1,8 @@
-import SceneNode from './SceneNode';
-import {
-  audio,
-} from './audioEngine';
+import SceneNode from '../SceneNode';
 
 export default class ScriptNode extends SceneNode {
+  static nodeName = 'Script';
+
   constructor() {
     super({
       name: 'Script',

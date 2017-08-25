@@ -1,6 +1,6 @@
-import SceneNode from './SceneNode';
-import { toPowerOfTwo } from '../math';
-import { gl, createTexture } from './offscreenCanvas';
+import SceneNode from '../SceneNode';
+import { toPowerOfTwo } from '../../math';
+import { gl, createTexture } from '../screen';
 
 function loadImageFromUrl(sourceUrl) {
   const image = new Image();
@@ -13,9 +13,11 @@ function loadImageFromUrl(sourceUrl) {
 }
 
 export default class SamplerNode extends SceneNode {
+  static nodeName = 'Image';
+
   constructor(imageUrl) {
     super({
-      name: 'Image',
+      name: SamplerNode.nodeName,
       outputs: {
         texture: { type: 'sampler2D', name: 'Texture' },
       },

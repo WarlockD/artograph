@@ -1,12 +1,11 @@
-import SceneNode from './SceneNode';
-import {
-  audio,
-} from './audioEngine';
+import SceneNode from '../SceneNode';
+import { audio } from '../screen';
 
 export default class OscNode extends SceneNode {
+  static nodeName = 'Oscillator';
   constructor() {
     super({
-      name: 'Oscillator',
+      name: OscNode.nodeName,
       inputs: {
         freq: {
           name: 'Freq',

@@ -1,10 +1,10 @@
-import SceneNode from './SceneNode';
+import SceneNode from '../SceneNode';
 import {
   gl,
   createTexture,
   createProgram,
   getSize,
-} from './offscreenCanvas';
+} from '../screen';
 
 const uniformTypeMapping = {
   float: 'uniform1f',
@@ -36,9 +36,11 @@ gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 
 export default class ProgramNode extends SceneNode {
+  static nodeName = 'Shader';
+
   constructor(definition) {
     super({
-      name: definition.name || 'Program',
+      name: definition.name || 'Shader',
       inputs: definition.uniforms,
       outputs: {
         result: { type: 'sampler2D', name: 'Result' },

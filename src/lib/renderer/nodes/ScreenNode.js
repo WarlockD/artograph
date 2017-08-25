@@ -1,12 +1,10 @@
-import SceneNode from './SceneNode';
-import {
-  canvas,
-  gl,
-  createProgram,
-} from './offscreenCanvas';
+import SceneNode from '../SceneNode';
 import {
   audio,
-} from './audioEngine';
+  canvas,
+  createProgram,
+  gl,
+} from '../screen';
 
 const textureBuffer = gl.createBuffer();
 const textureData = new Float32Array([
@@ -29,6 +27,8 @@ gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 
 export default class ScreenNode extends SceneNode {
+  static nodeName = 'Screen';
+
   constructor(targetCanvas) {
     super({
       name: 'Screen',
