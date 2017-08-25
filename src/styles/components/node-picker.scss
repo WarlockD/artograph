@@ -1,0 +1,51 @@
+.node-picker {
+  display: none;
+  position: relative;
+  min-width: $width-comfort-reading;
+  padding: $interval-block;
+  background-color: $palette-background;
+  box-shadow: 0 0 5px black;
+  border-radius: 0 0 5px 5px;
+  text-align: left;
+
+  &.active {
+    display: inline-block;
+  }
+
+  .node-picker-search {
+    width: 100%;
+  }
+
+  .node-picker-list {
+    padding: 0;
+    margin: $interval-component 0 0 0;
+    list-style: none;
+    text-align: left;
+    max-height: 60vh;
+    overflow: auto;
+
+    li {
+      cursor: pointer;
+      padding: $interval-component;
+      background-color: $palette-background;
+      transition: background-color 0.1s linear;
+
+      &.selected {
+        color: $palette-foreground-inverse;
+        background-color: $palette-primary;
+
+        &:hover {
+          background-color: darken($palette-primary, 5%);
+        }
+      }
+
+      &:hover {
+        background-color: $palette-muted;
+      }
+    }
+
+    li + li {
+      border-top: 1px solid $palette-muted;
+    }
+  }
+}

@@ -1,31 +1,60 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import mixFx from './fx/mix';
-import mblurFx from './fx/motionBlur';
+import { bound } from './lib/utils';
+
+import ScreenNode from './lib/renderer/nodes/ScreenNode';
 import SceneGraph from './lib/renderer/SceneGraph';
-import Sampler2DNode from './lib/renderer/Sampler2DNode';
-import ProgramNode from './lib/renderer/ProgramNode';
-import ScreenNode from './lib/renderer/ScreenNode';
 import SceneNode from './lib/renderer/SceneNode';
-import SinOscNode from './lib/renderer/SinOscNode';
-import ScriptNode from './lib/renderer/ScriptNode';
 
 import ImageContainer from './components/ImageContainer';
 import GraphView from './components/GraphView';
+import NodePicker from './components/NodePicker';
 
 const scene = new SceneGraph();
 // benchmark(100);
 
 class Page extends React.Component {
-  async componentDidMount() {
-    screen.setTarget(this.target);
+  screen = null;
+
+  state = {
+    isPickerOpened: false,
+  };
+
+  componentDidMount() {
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'F1') {
+        event.preventDefault();
+        event.stopPropagation();
+
+        this.setState({
+          isPickerOpened: true,
+        });
+      } else if (event.key === 'Escape') {
+        this.setState({
+          isPickerOpened: false,
+        });
+      }
+    }, { capture: true });
+    scene.on('node.attached', (node) => {
+      if (node instanceof ScreenNode) {
+        this.screen = node;
+        node.setTarget(this.target);
+      }
+    });
     this.updateScreen();
   }
 
   updateScreen = () => {
-    scene.run(screen);
+    if (this.screen) {
+      scene.run(this.screen);
+    }
     requestAnimationFrame(this.updateScreen);
+  }
+
+  @bound
+  attachNode(Node) {
+    scene.attachNode(new Node());
   }
 
   render() {
@@ -35,6 +64,12 @@ class Page extends React.Component {
           <canvas ref={(target) => this.target = target} />
         </div>
         <GraphView graph={scene} />
+        <div className='l-photospice-node-picker'>
+          <NodePicker
+            isOpened={this.state.isPickerOpened}
+            onClose={() => this.setState({ isPickerOpened: false })}
+            onPick={this.attachNode} />
+        </div>
       </div>
     );
   }

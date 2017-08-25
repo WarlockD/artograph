@@ -13,7 +13,12 @@ $node-view-min-width: 100px;
     padding: 0 $interval-component;
     color: $palette-foreground-inverse;
     background-color: $palette-primary;
+
+    .node-view-actions {
+      float: right;
+    }
   }
+
 
   .node-view-body {
     background-color: $palette-background;
