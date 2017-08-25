@@ -1,6 +1,6 @@
 import React from 'react';
 import { bound } from '../lib/utils';
-import NodeView from './NodeView';
+import MetaNodeView from './MetaNodeView';
 
 class PinsRegistry {
   constructor() {
@@ -184,17 +184,16 @@ export default class GraphView extends React.Component {
     candidateConnection: null,
   };
 
-  componentDidMount() {
+  @bound
+  handleNodeUpdate(node, firstUpdate) {
     // FIXME: This is one solution to problem I have with connections rendering:
     // To properly render node connections I need an information about pins
     // location which is not available until first render of nodes is done.
     // So after component did mount I force the update to render connections
     // with information about pins. Too lame, I know, but I dont have better
     // solution for now.
-    this.forceUpdate();
-  }
+    if (firstUpdate) return this.forceUpdate();
 
-  handleNodeUpdate(node) {
     const connections = this.props.graph.connections;
     const pins = this.pinsRegistry.pins;
 
@@ -256,15 +255,27 @@ export default class GraphView extends React.Component {
     this.setState({ candidateConnection });
   }
 
+  @bound
+  detachNode(node) {
+    try {
+      this.props.graph.detachNode(node);
+      this.pinsRegistry.unregisterPins(node);
+      this.forceUpdate();
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
   renderConnections(connections) {
     const result = [];
 
     for (let i = 0, len = connections.length; i < len; i += 1) {
+      const connection = connections[i];
       result.push(<Connection
         key={i}
-        ref={(element) => connections[i].uiElement = element}
+        ref={(element) => connection.uiElement = element}
         onDragStart={this.handleConnectionDragStart}
-        connection={connections[i]}
+        connection={connection}
         pins={this.pinsRegistry}/>);
     }
 
@@ -297,10 +308,11 @@ export default class GraphView extends React.Component {
 
   renderNodes(nodes) {
     return nodes.map((node, index) => {
-      return <NodeView
+      return <MetaNodeView
         key={index}
         node={node}
-        onNodeUpdate={() => this.handleNodeUpdate(node)}
+        onUpdate={this.handleNodeUpdate}
+        onRemoveRequest={this.detachNode}
         pins={this.pinsRegistry}/>
     });
   }

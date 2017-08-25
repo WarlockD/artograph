@@ -1,10 +1,10 @@
 import React from 'react';
 import { bound } from '../lib/utils';
 import debounce from 'lodash/debounce';
-import ScriptNode from '../lib/renderer/ScriptNode';
-import GenericNodeView from './GenericNodeView';
+import ScriptNode from '../lib/renderer/nodes/ScriptNode';
+import NodeView from './NodeView';
 
-export default class ScriptNodeView extends GenericNodeView {
+export default class ScriptNodeView extends NodeView {
   static modelNode = ScriptNode;
 
   constructor(props) {
