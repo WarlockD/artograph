@@ -59,6 +59,8 @@ export function dragHelper(options) {
   const onEnd = typeof options.onEnd === 'function' ? options.onEnd : _.identity;
 
   return function onDragStart(event) {
+    if (event.button !== 0) return;
+
     const mappedEvent = mapPointerEvent(event);
     const init = onStart(mappedEvent);
     const eventNames = mappedEvent.isTouchEvent
