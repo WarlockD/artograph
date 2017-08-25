@@ -6,13 +6,6 @@
   left: 0;
   background-color: rgb(48, 55, 64);
 
-  .graph-view {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-  }
-
   .result-image {
     position: absolute;
     width: 100%;
@@ -28,4 +21,19 @@
       vertical-align: middle;
     }
   }
+
+  .graph-view {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+
+  .l-photospice-node-picker {
+    position: absolute;
+    width: 100%;
+    z-index: 3;
+    text-align: center;
+  }
+
 }
