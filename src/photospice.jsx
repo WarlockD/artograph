@@ -14,117 +14,26 @@ import ScriptNode from './lib/renderer/ScriptNode';
 import ImageContainer from './components/ImageContainer';
 import GraphView from './components/GraphView';
 
-class TimeNode extends SceneNode {
-  constructor() {
-    super({
-      name: 'Time',
-      outputs: {
-        milliseconds: {
-          name: 'msec',
-          type: 'float',
-        },
-        seconds: {
-          name: 'sec',
-          type: 'float',
-        },
-      },
-    });
-  }
-
-  run() {
-    const ms = Date.now();
-    return {
-      milliseconds: ms,
-      seconds: ms / 1000.0,
-    };
-  }
-}
-
-class SinNode extends SceneNode {
-  constructor() {
-    super({
-      name: 'Sin',
-      inputs: {
-        in: {
-          name: 'x',
-          type: 'float',
-          value: 0.5,
-        }
-      },
-      outputs: {
-        sin: {
-          name: 'sin(x)',
-          type: 'float',
-        },
-        cos: {
-          name: 'cos(x)',
-          type: 'float',
-        },
-        tan: {
-          name: 'tan(x)',
-          type: 'float',
-        },
-        ctg: {
-          name: 'ctg(x)',
-          type: 'float',
-        },
-      },
-    });
-  }
-
-  run(inputs) {
-    const sin = Math.sin(inputs.in);
-    const cos = Math.cos(inputs.in);
-    return {
-      sin: sin,
-      cos: cos,
-      tan: sin / cos,
-      ctg: cos / sin,
-    };
-  }
-}
-
 const scene = new SceneGraph();
 // benchmark(100);
-const spice = new Sampler2DNode();
-const testImage = new Sampler2DNode();
-const mix = new ProgramNode(mixFx);
-const screen = new ScreenNode();
-const timer = new TimeNode();
-const sinus = new SinNode();
-const osc = new SinOscNode();
-const script = new ScriptNode();
-
-scene.attachNode(spice);
-scene.attachNode(testImage);
-scene.attachNode(mix);
-scene.attachNode(screen);
-scene.attachNode(timer);
-scene.attachNode(sinus);
-scene.attachNode(osc);
-scene.attachNode(script);
 
 class Page extends React.Component {
   async componentDidMount() {
     screen.setTarget(this.target);
-    await spice.loadFromUrl('./assets/spice.jpg');
-    await testImage.loadFromUrl('./assets/jelly-beans.png');
     this.updateScreen();
   }
 
   updateScreen = () => {
-    // console.time('screen update');
     scene.run(screen);
-    // console.timeEnd('screen update');
     requestAnimationFrame(this.updateScreen);
   }
 
   render() {
     return (
       <div className='l-photospice'>
-        <ImageContainer toggleCompactMode={this.toggleCompactMode}>
+        <div className='result-image'>
           <canvas ref={(target) => this.target = target} />
-        </ImageContainer>
+        </div>
         <GraphView graph={scene} />
       </div>
     );
