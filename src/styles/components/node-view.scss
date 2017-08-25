@@ -1,7 +1,9 @@
+$node-view-min-width: 100px;
+
 .node-view {
   display: inline-block;
   position: absolute;
-  min-width: 100px;
+  min-width: $node-view-min-width;
   border: 1px solid $palette-primary;
   box-shadow: 0 0 10px black;
 
@@ -15,46 +17,39 @@
 
   .node-view-body {
     background-color: $palette-background;
+    overflow: auto; // A hack to fix issues with floating losts causing body to collapse
   }
 
   .node-view-pins {
-    padding: $interval-component $interval-block;
-    list-style: none;
-
     &:empty {
       display: none;
     }
 
+    ul {
+      padding: $interval-component 0;
+    }
+
     li {
+      list-style: none;
       position: relative;
     }
   }
 
   .node-view-inputs {
+    float: left;
+
     li {
       text-align: left;
-
-      .node-view-pin {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: 0.75em;
-        left: -$interval-block;
-      }
+      padding: 0 $interval-component 0 $interval-block;
     }
   }
 
   .node-view-outputs {
+    float: right;
+
     li {
       text-align: right;
-
-      .node-view-pin {
-        position: absolute;
-        width: 0;
-        height: 0;
-        top: 0.75em;
-        right: -$interval-block;
-      }
+      padding: 0 $interval-block 0 $interval-component;
     }
   }
 }

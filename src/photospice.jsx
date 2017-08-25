@@ -9,6 +9,7 @@ import ProgramNode from './lib/renderer/ProgramNode';
 import ScreenNode from './lib/renderer/ScreenNode';
 import SceneNode from './lib/renderer/SceneNode';
 import SinOscNode from './lib/renderer/SinOscNode';
+import ScriptNode from './lib/renderer/ScriptNode';
 
 import ImageContainer from './components/ImageContainer';
 import GraphView from './components/GraphView';
@@ -92,6 +93,7 @@ const screen = new ScreenNode();
 const timer = new TimeNode();
 const sinus = new SinNode();
 const osc = new SinOscNode();
+const script = new ScriptNode();
 
 scene.attachNode(spice);
 scene.attachNode(testImage);
@@ -100,6 +102,7 @@ scene.attachNode(screen);
 scene.attachNode(timer);
 scene.attachNode(sinus);
 scene.attachNode(osc);
+scene.attachNode(script);
 
 class Page extends React.Component {
   async componentDidMount() {
