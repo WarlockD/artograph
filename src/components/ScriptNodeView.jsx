@@ -10,7 +10,9 @@ export default class ScriptNodeView extends GenericNodeView {
   constructor(props) {
     super(props);
 
-    this.code = props.node.code;
+    this.state = {
+      code: props.node.code,
+    };
 
     this.compile = debounce((code) => {
       this.props.node.compile(code);
@@ -19,14 +21,17 @@ export default class ScriptNodeView extends GenericNodeView {
 
   @bound
   handleCodeChange(event) {
-    this.compile(event.target.value);
+    const code = event.target.value;
+    this.compile(code);
+    this.setState({ code });
   }
 
   renderContents() {
     return <div className='script-node-view'>
       <textarea
         onChange={this.handleCodeChange}
-        rows='10'>{this.props.node.code}</textarea>
+        value={this.state.code}
+        rows='10'/>
     </div>;
   }
 }

@@ -26,11 +26,19 @@ export default class ScriptNode extends SceneNode {
   }
 
   compile(code) {
-    this.func = new Function('input', code);
-    this.code = code;
+    try {
+      this.func = new Function('input', code);
+      this.code = code;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   run(inputs) {
-    return { output: this.func(inputs.input) };
+    try {
+      return { output: this.func(inputs.input) };
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
