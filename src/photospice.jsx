@@ -1,13 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { bound } from './lib/utils';
+import { bound, keyboardHelper } from './lib/utils';
 
 import ScreenNode from './lib/renderer/nodes/ScreenNode';
 import SceneGraph from './lib/renderer/SceneGraph';
 import SceneNode from './lib/renderer/SceneNode';
 
-import ImageContainer from './components/ImageContainer';
 import GraphView from './components/GraphView';
 import NodePicker from './components/NodePicker';
 
@@ -22,26 +21,26 @@ class Page extends React.Component {
   };
 
   componentDidMount() {
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'F1') {
-        event.preventDefault();
-        event.stopPropagation();
-
-        this.setState({
-          isPickerOpened: true,
-        });
-      } else if (event.key === 'Escape') {
+    keyboardHelper(document, {
+      'Escape': () => {
         this.setState({
           isPickerOpened: false,
         });
-      }
-    }, { capture: true });
+      },
+      'F1': () => {
+        this.setState({
+          isPickerOpened: true,
+        });
+      },
+    });
+
     scene.on('node.attached', (node) => {
-      if (node instanceof ScreenNode) {
+      if (node instanceof ScreenNode && !this.screen) {
         this.screen = node;
         node.setTarget(this.target);
       }
     });
+
     this.updateScreen();
   }
 

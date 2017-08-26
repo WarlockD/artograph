@@ -99,3 +99,37 @@ export function dragHelper(options) {
 export function assert(condition, message) {
   if (condition) throw new Error(message);
 }
+
+export function keyboardHelper(element, shortcuts) {
+  assert(!element, 'Target element is not defined');
+  assert(!shortcuts, 'Shortcuts are not defined');
+
+  element.addEventListener('keydown', handleKeyDown);
+
+  function handleKeyDown(event) {
+    for (let shortcut in shortcuts) {
+      const modifiers = shortcut.split('+');
+      const key = modifiers.pop();
+
+      if (modifiers.length > 0) {
+        const modifiersMatch = modifiers.every((mod) => {
+          return event.getModifierState(mod);
+        });
+        if (!modifiersMatch) continue;
+      }
+
+      if (key === event.key) {
+        event.preventDefault();
+        event.stopPropagation();
+        shortcuts[shortcut](event);
+        return;
+      }
+    }
+  }
+
+  function removeListener() {
+    element.removeEventListener('keydown', handleKeyDown);
+  }
+
+  return removeListener;
+}
