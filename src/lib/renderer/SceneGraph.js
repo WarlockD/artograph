@@ -53,7 +53,9 @@ export default class SceneGraph extends EventEmitter {
     assert(input.type !== output.type, `Connection ${sourcePin}:${output.type}=>${targetPin}:${input.type} is not possible`);
     assert(input.link, 'Input is already connected');
 
+    sourceNode.lockSchema();
     sourceNode.onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin);
+    targetNode.lockSchema();
     targetNode.onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin);
 
     input.prevLink = input.link;
@@ -83,7 +85,9 @@ export default class SceneGraph extends EventEmitter {
     assert(!input, `Invalid input "${targetPin}"`);
     assert(!input.link, `Connection ${sourcePin}=>${targetPin} doesn't exist`);
 
+    sourceNode.unlockSchema();
     sourceNode.onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin);
+    targetNode.unlockSchema();
     targetNode.onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin);
 
     delete input.link;
