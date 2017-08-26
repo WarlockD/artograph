@@ -9,11 +9,11 @@ class TextNode extends SceneNode {
         text: { type: 'string', name: 'Text' },
       },
     });
-    this.text = text;
+    this.set('text', text);
   }
 
-  run() {
-    return { text: this.text };
+  set text(v) {
+    this.set('text', v);
   }
 }
 
@@ -24,11 +24,11 @@ class ValueNode extends SceneNode {
         value: { type: 'float', name: 'Value' },
       },
     });
-    this.value = value;
+    this.set('value', value);
   }
 
-  run() {
-    return { value: this.value };
+  set value(v) {
+    this.set('value', v);
   }
 }
 
@@ -45,10 +45,10 @@ class SummatorNode extends SceneNode {
     });
   }
 
-  run(inputs) {
+  update(inputs) {
     assert(!inputs.a, 'Input "a" is missing');
     assert(!inputs.b, 'Input "b" is missing');
-    return { c: inputs.a + inputs.b };
+    this.set('c', inputs.a + inputs.b);
   }
 }
 
@@ -64,9 +64,9 @@ class NegateNode extends SceneNode {
     });
   }
 
-  run(inputs) {
+  update(inputs) {
     assert(!inputs.in, 'Input "in" is missing');
-    return -inputs.in;
+    this.set('out', -inputs.in);
   }
 }
 
@@ -107,21 +107,21 @@ describe('SceneGraph.detachNode', () => {
   test('Detach first attached node', () => {
     const scene = new SceneGraph();
     const a = new ValueNode(10);
-    const b = new ValueNode(20);
+    const b = new TextNode('text');
     scene.attachNode(a);
     scene.attachNode(b);
     scene.detachNode(a);
-    expect(scene.nodes[0].value).toBe(20);
+    expect(scene.nodes[0]).toBeInstanceOf(TextNode);
   });
 
   test('Detach last attached node', () => {
     const scene = new SceneGraph();
     const a = new ValueNode(10);
-    const b = new ValueNode(20);
+    const b = new TextNode('text');
     scene.attachNode(a);
     scene.attachNode(b);
     scene.detachNode(b);
-    expect(scene.nodes[0].value).toBe(10);
+    expect(scene.nodes[0]).toBeInstanceOf(ValueNode);
   });
 
   test('Fail if node is invalid', () => {
@@ -297,7 +297,7 @@ describe('SceneGraph.run', () => {
     scene.connect(a, 'value', c, 'a');
     scene.connect(b, 'value', c, 'b');
     const outputs = scene.run(c);
-    expect(outputs.c).toBe(30);
+    expect(outputs.c.value).toBe(30);
   });
 
   test('2 levels deep graph', () => {
@@ -317,7 +317,7 @@ describe('SceneGraph.run', () => {
     scene.connect(c, 'value', e, 'a');
     scene.connect(d, 'c', e, 'b');
     const outputs = scene.run(e);
-    expect(outputs.c).toBe(60);
+    expect(outputs.c.value).toBe(60);
   });
 
   test('Output reuse', () => {
@@ -335,7 +335,7 @@ describe('SceneGraph.run', () => {
     scene.connect(b, 'value', c, 'b');
     scene.connect(c, 'c', d, 'b');
     const outputs = scene.run(d);
-    expect(outputs.c).toBe(40);
+    expect(outputs.c.value).toBe(40);
   });
 
   test('Single input', () => {
@@ -347,17 +347,17 @@ describe('SceneGraph.run', () => {
     scene.connect(a, 'value', b, 'a');
     scene.connect(a, 'value', b, 'b');
     const outputs = scene.run(b);
-    expect(outputs.c).toBe(20);
+    expect(outputs.c.value).toBe(20);
   });
 
   test('Always rerun node without inputs', () => {
     const scene = new SceneGraph();
     const a = new ValueNode(10);
     scene.attachNode(a);
-    a.run = jest.fn();
+    a.update = jest.fn();
     scene.run(a);
     scene.run(a);
-    expect(a.run).toHaveBeenCalledTimes(2);
+    expect(a.update).toHaveBeenCalledTimes(2);
   });
 
   test('Do not rerun node if inputs are not changed', () => {
@@ -370,10 +370,10 @@ describe('SceneGraph.run', () => {
     scene.attachNode(c);
     scene.connect(a, 'value', c, 'a');
     scene.connect(b, 'value', c, 'b');
-    c.run = jest.fn();
+    c.update = jest.fn();
     scene.run(c);
     scene.run(c);
-    expect(c.run).toHaveBeenCalledTimes(1);
+    expect(c.update).toHaveBeenCalledTimes(1);
   });
 
   test('Rerun node if inputs are changed', () => {
@@ -386,11 +386,11 @@ describe('SceneGraph.run', () => {
     scene.attachNode(c);
     scene.connect(a, 'value', c, 'a');
     scene.connect(b, 'value', c, 'b');
-    c.run = jest.fn();
+    c.update = jest.fn();
     scene.run(c);
     a.value = 20;
     scene.run(c);
-    expect(c.run).toHaveBeenCalledTimes(2);
+    expect(c.update).toHaveBeenCalledTimes(2);
   });
 
   test('Rerun node if links are changed', () => {
@@ -406,12 +406,12 @@ describe('SceneGraph.run', () => {
     scene.attachNode(d);
     scene.connect(a, 'value', d, 'a');
     scene.connect(b, 'value', d, 'b');
-    d.run = jest.fn();
+    d.update = jest.fn();
     scene.run(d);
     scene.disconnect(b, 'value', d, 'b');
     scene.connect(c, 'value', d, 'b');
     scene.run(d);
-    expect(d.run).toHaveBeenCalledTimes(2);
+    expect(d.update).toHaveBeenCalledTimes(2);
   });
 
   test('Fail on 1 level deep infinite loop', () => {

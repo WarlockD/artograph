@@ -82,11 +82,7 @@ function benchmark(count = 100) {
           out: { type: 'float', name: 'Value' },
         },
       });
-      this.value = value;
-    }
-
-    run() {
-      return { out: this.value };
+      this.set('value', value);
     }
   }
 
@@ -102,8 +98,8 @@ function benchmark(count = 100) {
       });
     }
 
-    run(inputs) {
-      return -inputs.in;
+    update(inputs) {
+      this.set('out', -inputs.in);
     }
   }
 

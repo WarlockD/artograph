@@ -84,7 +84,7 @@ export default class ScreenNode extends SceneNode {
     this.target = target;
   }
 
-  run(inputs) {
+  update(inputs) {
     gl.useProgram(this.program);
     gl.enableVertexAttribArray(this.aPosition);
     gl.enableVertexAttribArray(this.aTexCoord);

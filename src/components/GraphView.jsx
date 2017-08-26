@@ -10,6 +10,7 @@ class PinsRegistry {
 
   updatePin(node, pinName, position) {
     let nodePins = this.index.get(node) || {};
+    let isNewPin = false;
 
     if (nodePins[pinName]) {
       nodePins[pinName].x = position.x;
@@ -23,9 +24,12 @@ class PinsRegistry {
         y: position.y,
       };
       this.pins.push(nodePins[pinName]);
+      isNewPin = true;
     }
 
     this.index.set(node, nodePins);
+
+    return isNewPin;
   }
 
   getPin(node, pin) {
@@ -185,15 +189,7 @@ export default class GraphView extends React.Component {
   };
 
   @bound
-  handleNodeUpdate(node, firstUpdate) {
-    // FIXME: This is one solution to problem I have with connections rendering:
-    // To properly render node connections I need an information about pins
-    // location which is not available until first render of nodes is done.
-    // So after component did mount I force the update to render connections
-    // with information about pins. Too lame, I know, but I dont have better
-    // solution for now.
-    if (firstUpdate) return this.forceUpdate();
-
+  handleNodeUpdate(node) {
     const connections = this.props.graph.connections;
     const pins = this.pinsRegistry.pins;
 
@@ -266,6 +262,23 @@ export default class GraphView extends React.Component {
     }
   }
 
+  @bound
+  updateNodePins(node, pins) {
+    let updateRequired = false;
+
+    for (let i = 0, len = pins.length; i < len; i += 1) {
+      const pin = pins[i];
+      updateRequired = this.pinsRegistry.updatePin(node, pin.name, pin) || updateRequired;
+    }
+
+    // FIXME: update only connections/pins svg overlay
+    if (updateRequired) {
+      this.forceUpdate();
+    } else {
+      this.handleNodeUpdate(node);
+    }
+  }
+
   renderConnections(connections) {
     const result = [];
 
@@ -311,9 +324,8 @@ export default class GraphView extends React.Component {
       return <MetaNodeView
         key={node.id}
         node={node}
-        onUpdate={this.handleNodeUpdate}
-        onRemoveRequest={this.detachNode}
-        pins={this.pinsRegistry}/>
+        updatePins={this.updateNodePins}
+        onRemoveRequest={this.detachNode}/>
     });
   }
 

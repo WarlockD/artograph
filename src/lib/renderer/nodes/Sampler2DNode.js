@@ -30,13 +30,10 @@ export default class Sampler2DNode extends SceneNode {
     this.image = await loadImageFromUrl(url);
     if (this.texture) gl.deleteTexture(this.texture);
     this.texture = createTexture(this.image);
+    this.set('texture', this.texture);
   }
 
   getSize() {
     return toPowerOfTwo(Math.max(this.image.width, this.image.height));
-  }
-
-  run() {
-    return { texture: this.texture };
   }
 }

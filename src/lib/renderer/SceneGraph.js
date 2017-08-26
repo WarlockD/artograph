@@ -3,6 +3,7 @@ import SceneNode from './SceneNode';
 import EventEmitter from './EventEmitter';
 
 let idCounter = 0;
+let iterationCounter = 0;
 
 export default class SceneGraph extends EventEmitter {
   constructor() {
@@ -64,10 +65,9 @@ export default class SceneGraph extends EventEmitter {
 
     input.prevLink = input.link;
     input.link = {
-      source: sourceNode,
-      sourcePin: sourcePin,
-      value: undefined,
-      prevValue: undefined,
+      sourceNode: sourceNode,
+      output: sourceNode.outputs[sourcePin],
+      lastUpdate: null,
     };
 
     const connection = { sourceNode, sourcePin, targetNode, targetPin };
@@ -109,18 +109,18 @@ export default class SceneGraph extends EventEmitter {
 
   run(node, traversedNodes = []) {
     if (traversedNodes.indexOf(node) !== -1) {
-      return node.prevOutputs;
+      return node.outputs;
     }
 
     traversedNodes.push(node);
-    node.onBeforeRun();
+    node.onEnter();
 
     if (node.inputs) {
       const inputs = {};
       let isDirty = false;
 
-      for (let inputId in node.inputs) {
-        const input = node.inputs[inputId];
+      for (let inputPin in node.inputs) {
+        const input = node.inputs[inputPin];
         const link = input.link;
 
         if (link !== input.prevLink) {
@@ -129,28 +129,24 @@ export default class SceneGraph extends EventEmitter {
         }
 
         if (link) {
-          const outputs = this.run(link.source, traversedNodes);
-          if (outputs) {
-            link.value = outputs[link.sourcePin];
-            if (link.value !== link.prevValue) {
-              isDirty = true;
-              link.prevValue = link.value;
-            }
-            inputs[inputId] = link.value;
+          this.run(link.sourceNode, traversedNodes);
+          inputs[inputPin] = link.output.value;
+          if (link.lastUpdate !== link.output.lastUpdate) {
+            isDirty = true;
+            link.lastUpdate = link.output.lastUpdate;
           }
         } else {
-          inputs[inputId] = input.value;
+          inputs[inputPin] = input.value;
         }
       }
 
-      node.prevOutputs = node.run(inputs);
-
-      // if (isDirty) {
-      // }
+      if (isDirty) {
+        node.update(inputs);
+      }
     } else {
-      node.prevOutputs = node.run();
+      node.update();
     }
 
-    return node.prevOutputs;
+    return node.outputs;
   }
 }

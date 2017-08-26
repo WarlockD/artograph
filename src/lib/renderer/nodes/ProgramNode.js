@@ -88,7 +88,7 @@ export default class ProgramNode extends SceneNode {
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.result, 0);
   }
 
-  run(inputs) {
+  update(inputs) {
     if (!this.program) return;
 
     const currentSize = getSize();
@@ -121,6 +121,6 @@ export default class ProgramNode extends SceneNode {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    return { result: this.result };
+    this.set('result', this.result);
   }
 }

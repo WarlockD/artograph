@@ -46,13 +46,13 @@ export default class OscNode extends SceneNode {
     }
   }
 
-  run(inputs) {
+  update(inputs) {
     try {
       this.audioNode.gain.value = inputs.gain;
       this.osc.frequency.linearRampToValueAtTime(inputs.freq, audio.currentTime + 0.01);
     } catch (e) {
       console.error(e);
     }
-    return { output: this.audioNode };
+    this.set('output', this.audioNode);
   }
 }

@@ -1,6 +1,8 @@
 import { assert } from '../utils';
 import cloneDeep from 'lodash/cloneDeep';
 
+let updateCounter = 0;
+
 export default class SceneNode {
   constructor(schema) {
     this.locked = 0;
@@ -25,11 +27,17 @@ export default class SceneNode {
     assert(this.locked > 0, 'Cannot change schema of locked node!');
 
     this.name = schema.name || 'Node';
-    this.inputs = cloneDeep(schema.inputs);
-    this.outputs = cloneDeep(schema.outputs);
+    this.inputs = cloneDeep(schema.inputs || {});
+    this.outputs = cloneDeep(schema.outputs || {});
   }
 
-  onBeforeRun() {
+  set(pinName, value) {
+    const output = this.outputs[pinName];
+    output.value = value;
+    output.lastUpdate = updateCounter++;
+  }
+
+  onEnter() {
     // Do nothing by default
   }
 
@@ -38,6 +46,10 @@ export default class SceneNode {
   }
 
   onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin) {
+    // Do nothing by default
+  }
+
+  update() {
     // Do nothing by default
   }
 }

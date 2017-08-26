@@ -48,7 +48,7 @@ export default class OscNode extends SceneNode {
     }
   }
 
-  run(inputs) {
-    return { output: this.audioNode };
+  update(inputs) {
+    this.set('output', this.audioNode);
   }
 }

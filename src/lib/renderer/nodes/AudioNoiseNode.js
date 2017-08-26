@@ -50,12 +50,12 @@ export default class AudioNoiseNode extends SceneNode {
     }
   }
 
-  run(inputs) {
+  update(inputs) {
     try {
       this.audioNode.gain.value = inputs.gain;
     } catch (e) {
       console.error(e);
     }
-    return { output: this.audioNode };
+    this.set('output', this.audioNode);
   }
 }

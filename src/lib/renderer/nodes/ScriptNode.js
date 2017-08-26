@@ -54,9 +54,13 @@ export default class ScriptNode extends SceneNode {
     }
   }
 
-  run(inputs) {
+  update(inputs) {
     try {
-      return this.func(inputs.input);
+      const outputs = this.func(inputs.input);
+      this.set('a', outputs.a);
+      this.set('b', outputs.b);
+      this.set('c', outputs.c);
+      this.set('d', outputs.d);
     } catch (e) {
       console.error(e);
     }

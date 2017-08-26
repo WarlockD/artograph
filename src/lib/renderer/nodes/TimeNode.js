@@ -8,7 +8,7 @@ export default class ScriptNode extends SceneNode {
     super({
       name: 'Time',
       outputs: {
-        output: {
+        seconds: {
           type: 'float',
           name: 'Seconds',
         },
@@ -16,7 +16,7 @@ export default class ScriptNode extends SceneNode {
     });
   }
 
-  run() {
-    return { output: audio.currentTime };
+  update() {
+    this.set('seconds', audio.currentTime);
   }
 }

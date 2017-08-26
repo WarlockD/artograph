@@ -3,10 +3,17 @@ import { bound, dragHelper } from '../lib/utils';
 import { align } from '../lib/math';
 
 export default class NodeView extends React.Component {
-  state = {
-    posX: 0,
-    posY: 0,
-  };
+  constructor(props) {
+    super(props);
+    const node = props.node;
+    this.pins = [];
+    this.state = {
+      posX: 0,
+      posY: 0,
+      outputs: node.outputs,
+      inputs: node.inputs,
+    };
+  }
 
   startNodeMove = dragHelper({
     onStart: (event) => {
@@ -24,24 +31,32 @@ export default class NodeView extends React.Component {
     }
   });
 
-  updateAllPins(firstRun) {
+  updateAllPins() {
     const node = this.props.node;
     const bodyRect = this.nodeBody.getBoundingClientRect();
     const pins = this.nodeBody.querySelectorAll('.node-view-pin');
-    for (let i = 0, len = pins.length; i < len; i += 1) {
+    const len = pins.length;
+    let i;
+
+    for (i = 0; i < len; i += 1) {
       const pin = pins[i];
-      const pinName = pin.dataset.pinName;
       const isOutput = pin.dataset.isOutput;
-      const rect = pin.getBoundingClientRect();
-      this.props.pins.updatePin(node, pinName, {
+      const pinRect = pin.getBoundingClientRect();
+      this.pins[i] = {
+        name: pin.dataset.pinName,
         x: isOutput ? bodyRect.left + bodyRect.width : bodyRect.left,
-        y: rect.top + rect.height / 2,
-      });
+        y: pinRect.top + pinRect.height / 2,
+      };
     }
-    this.props.onUpdate(node, firstRun);
+
+    if (len < this.pins.length) {
+      this.pins.splice(i, this.pins.length - len);
+    }
+
+    this.props.updatePins(node, this.pins);
   }
 
-  renderPins(pins, outputs) {
+  renderPins(pins, isOutput) {
     const result = [];
 
     for (let key in pins) {
@@ -50,7 +65,7 @@ export default class NodeView extends React.Component {
         className='node-view-pin'
         key={key}
         data-pin-name={key}
-        data-is-output={outputs}>
+        data-is-output={isOutput}>
         {pin.name}
       </li>);
     }
@@ -64,7 +79,7 @@ export default class NodeView extends React.Component {
   }
 
   componentDidMount() {
-    this.updateAllPins(true);
+    this.updateAllPins();
   }
 
   componentDidUpdate() {
@@ -97,14 +112,14 @@ export default class NodeView extends React.Component {
         </div>
         <div
           className='node-view-body'
-          ref={(body) => {this.nodeBody = body}}>
+          ref={(body) => this.nodeBody = body}>
           {this.renderContents()}
           <div className='node-view-pins'>
             <ul className='node-view-inputs'>
-              {this.renderPins(node.inputs)}
+              {this.renderPins(this.state.inputs)}
             </ul>
             <ul className='node-view-outputs'>
-              {this.renderPins(node.outputs, true)}
+              {this.renderPins(this.state.outputs, true)}
             </ul>
           </div>
         </div>
