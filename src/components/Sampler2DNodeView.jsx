@@ -6,12 +6,6 @@ import NodeView from './NodeView';
 export default class Sampler2DNodeView extends NodeView {
   static modelNode = Sampler2DNode;
 
-  constructor(props) {
-    super(props);
-
-    this.state = {};
-  }
-
   @bound
   uploadImage(event) {
     const reader = new FileReader();
@@ -27,6 +21,7 @@ export default class Sampler2DNodeView extends NodeView {
     return <div>
       <input
         type='file'
+        accept='image/*'
         style={{ display: 'none' }}
         ref={(input) => this.input = input}
         onChange={this.uploadImage}/>
