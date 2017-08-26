@@ -1,5 +1,5 @@
 import React from 'react';
-import { bound, classes } from '../lib/utils';
+import { bound, classes, keyboardHelper } from '../lib/utils';
 import nodes from '../lib/renderer/nodes';
 
 export default class NodePicker extends React.Component {
@@ -42,16 +42,6 @@ export default class NodePicker extends React.Component {
     this.closePicker();
   }
 
-  @bound
-  handleKeyboard(event) {
-    switch (event.key) {
-      case 'Enter':
-        event.stopPropagation();
-        this.pickNode(this.state.selected);
-        break;
-    }
-  }
-
   renderResults(results) {
     return results.map((node, index) => {
       const itemClass = classes({
@@ -67,12 +57,40 @@ export default class NodePicker extends React.Component {
     });
   }
 
+  componentDidMount() {
+    keyboardHelper(this.body, {
+      'Enter': () => {
+        this.pickNode(this.state.selected);
+      },
+      'ArrowUp': () => {
+        const index = this.state.results.findIndex((node) => {
+          return node === this.state.selected;
+        });
+        const newIndex = index !== 0
+          ? index - 1
+          : this.state.results.length - 1;
+        this.setState({ selected: this.state.results[newIndex] });
+      },
+      'ArrowDown': () => {
+        const index = this.state.results.findIndex((node) => {
+          return node === this.state.selected;
+        });
+        const lastIndex = this.state.results.length -1;
+        const newIndex = index !== lastIndex
+          ? index + 1
+          : 0;
+        this.setState({ selected: this.state.results[newIndex] });
+      },
+    });
+  }
+
   render() {
     const pickerClass = classes('node-picker', {
       active: this.props.isOpened,
     });
 
     return <div
+      ref={(body) => this.body = body}
       className={pickerClass}>
       <input
         className='input node-picker-search'
