@@ -40,6 +40,23 @@ export default class ProgramNode extends SceneNode {
 
   constructor(definition) {
     super({
+      name: ProgramNode.nodeName,
+      inputs: [],
+      outputs: {
+        result: { type: 'sampler2D', name: 'Result' },
+      },
+    });
+
+    this.program = null;
+
+    this.rendererSize = getSize();
+    this.initFramebuffer(this.rendererSize.width, this.rendererSize.height);
+
+    if (definition) this.loadDefinition(definition);
+  }
+
+  loadDefinition(definition) {
+    this.updateSchema({
       name: definition.name || 'Shader',
       inputs: definition.uniforms,
       outputs: {
@@ -48,6 +65,7 @@ export default class ProgramNode extends SceneNode {
     });
 
     this.program = createProgram(definition.shader);
+
     this.aPosition = gl.getAttribLocation(this.program, 'aPosition');
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
     gl.vertexAttribPointer(this.aPosition, 3, gl.FLOAT, false, 0, 0);
@@ -57,9 +75,6 @@ export default class ProgramNode extends SceneNode {
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
     gl.vertexAttribPointer(this.aTexCoord, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.aTexCoord);
-
-    this.rendererSize = getSize();
-    this.initFramebuffer(this.rendererSize.width, this.rendererSize.height);
   }
 
   initFramebuffer(width, height) {
@@ -74,6 +89,8 @@ export default class ProgramNode extends SceneNode {
   }
 
   run(inputs) {
+    if (!this.program) return;
+
     const currentSize = getSize();
 
     if (currentSize.toString() !== this.rendererSize.toString()) {
