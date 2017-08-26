@@ -1,1 +1,1 @@
-jest.mock('./lib/renderer/offscreenCanvas');
+jest.mock('./lib/renderer/screen');

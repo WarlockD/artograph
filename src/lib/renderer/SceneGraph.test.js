@@ -104,6 +104,26 @@ describe('SceneGraph.detachNode', () => {
     expect(scene.nodes.length).toBe(0);
   });
 
+  test('Detach first attached node', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.detachNode(a);
+    expect(scene.nodes[0].value).toBe(20);
+  });
+
+  test('Detach last attached node', () => {
+    const scene = new SceneGraph();
+    const a = new ValueNode(10);
+    const b = new ValueNode(20);
+    scene.attachNode(a);
+    scene.attachNode(b);
+    scene.detachNode(b);
+    expect(scene.nodes[0].value).toBe(10);
+  });
+
   test('Fail if node is invalid', () => {
     const scene = new SceneGraph();
     expect(() => {
@@ -402,9 +422,11 @@ describe('SceneGraph.run', () => {
     scene.attachNode(b);
     scene.connect(a, 'out', b, 'in');
     scene.connect(b, 'out', a, 'in');
+    // Since it's a loop "in" will never be defined.
+    // So we expect run to throw such exception.
     expect(() => {
       scene.run(b);
-    }).toThrowError('Infinite loop detected. Bailing out.');
+    }).toThrowError('Input "in" is missing');
   });
 
   test('Fail on 2 level deep infinite loop', () => {
@@ -420,6 +442,6 @@ describe('SceneGraph.run', () => {
     scene.connect(c, 'out', a, 'in');
     expect(() => {
       scene.run(c);
-    }).toThrowError('Infinite loop detected. Bailing out.');
+    }).toThrowError('Input "in" is missing');
   });
 });

@@ -112,11 +112,12 @@ export default class SceneGraph extends EventEmitter {
       return node.prevOutputs;
     }
 
+    traversedNodes.push(node);
+    node.onBeforeRun();
+
     if (node.inputs) {
       const inputs = {};
       let isDirty = false;
-
-      node.onBeforeRun();
 
       for (let inputId in node.inputs) {
         const input = node.inputs[inputId];
@@ -144,7 +145,6 @@ export default class SceneGraph extends EventEmitter {
 
       node.prevOutputs = node.run(inputs);
 
-      traversedNodes.push(node);
       // if (isDirty) {
       // }
     } else {
