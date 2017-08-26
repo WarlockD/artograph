@@ -2,6 +2,8 @@ import { assert } from '../utils';
 import SceneNode from './SceneNode';
 import EventEmitter from './EventEmitter';
 
+let idCounter = 0;
+
 export default class SceneGraph extends EventEmitter {
   constructor() {
     super();
@@ -17,6 +19,7 @@ export default class SceneGraph extends EventEmitter {
   attachNode(node) {
     assert(!(node instanceof SceneNode), 'Invalid node');
     assert(this.isPresent(node), 'Node is already attached');
+    node.id = idCounter++;
     this.nodes.push(node);
     this.emit('node.attached', node);
   }
@@ -30,6 +33,7 @@ export default class SceneGraph extends EventEmitter {
     assert(isConnected, 'Node is still connected');
     this.nodes = this.nodes.filter((value) => value !== node);
     this.emit('node.detached', node);
+    delete node.id;
   }
 
   connect(sourceNode, sourcePin, targetNode, targetPin) {

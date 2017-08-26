@@ -307,9 +307,9 @@ export default class GraphView extends React.Component {
   }
 
   renderNodes(nodes) {
-    return nodes.map((node, index) => {
+    return nodes.map((node) => {
       return <MetaNodeView
-        key={index}
+        key={node.id}
         node={node}
         onUpdate={this.handleNodeUpdate}
         onRemoveRequest={this.detachNode}
