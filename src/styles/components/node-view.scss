@@ -19,9 +19,9 @@ $node-view-min-width: 100px;
     }
   }
 
-
   .node-view-body {
     background-color: $palette-background;
+    padding: $interval-component;
     overflow: auto; // A hack to fix issues with floating losts causing body to collapse
   }
 
@@ -31,7 +31,7 @@ $node-view-min-width: 100px;
     }
 
     ul {
-      padding: $interval-component 0;
+      padding: $interval-component 0 0 0;
     }
 
     li {
@@ -45,7 +45,7 @@ $node-view-min-width: 100px;
 
     li {
       text-align: left;
-      padding: 0 $interval-component 0 $interval-block;
+      padding: 0 $interval-component;
     }
   }
 
@@ -54,7 +54,7 @@ $node-view-min-width: 100px;
 
     li {
       text-align: right;
-      padding: 0 $interval-block 0 $interval-component;
+      padding: 0 $interval-component;
     }
   }
 }
