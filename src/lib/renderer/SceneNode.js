@@ -27,8 +27,8 @@ export default class SceneNode {
     assert(this.locked > 0, 'Cannot change schema of locked node!');
 
     this.name = schema.name || 'Node';
-    this.inputs = cloneDeep(schema.inputs || {});
-    this.outputs = cloneDeep(schema.outputs || {});
+    this.inputs = cloneDeep(schema.inputs);
+    this.outputs = cloneDeep(schema.outputs);
   }
 
   set(pinName, value) {
