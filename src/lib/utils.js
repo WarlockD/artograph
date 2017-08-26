@@ -1,10 +1,14 @@
 import _ from 'lodash';
 
 export function bound(target, key, descriptor) {
+  let boundFn;
   return {
     configurable: false,
     get: function() {
-      return descriptor.value.bind(this);
+      if (!boundFn) {
+        boundFn = descriptor.value.bind(this);
+      }
+      return boundFn;
     },
   };
 }
