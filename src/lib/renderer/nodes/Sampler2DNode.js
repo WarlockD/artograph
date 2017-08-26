@@ -12,12 +12,12 @@ function loadImageFromUrl(sourceUrl) {
   return result;
 }
 
-export default class SamplerNode extends SceneNode {
+export default class Sampler2DNode extends SceneNode {
   static nodeName = 'Image';
 
   constructor(imageUrl) {
     super({
-      name: SamplerNode.nodeName,
+      name: Sampler2DNode.nodeName,
       outputs: {
         texture: { type: 'sampler2D', name: 'Texture' },
       },
