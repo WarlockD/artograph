@@ -10,9 +10,7 @@ export default class OscNodeView extends NodeView {
   constructor(props) {
     super(props);
 
-    this.state = {
-      type: props.node.osc.type,
-    };
+    this.state.type = props.node.osc.type;
 
     this.compile = debounce((code) => {
       this.props.node.compile(code);

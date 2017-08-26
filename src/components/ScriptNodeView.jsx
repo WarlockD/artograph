@@ -10,9 +10,7 @@ export default class ScriptNodeView extends NodeView {
   constructor(props) {
     super(props);
 
-    this.state = {
-      code: props.node.code,
-    };
+    this.state.code = props.node.code;
 
     this.compile = debounce((code) => {
       this.props.node.compile(code);
