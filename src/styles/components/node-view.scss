@@ -15,6 +15,7 @@ $node-view-min-width: 100px;
     background-color: $palette-primary;
 
     .node-view-actions {
+      cursor: pointer;
       float: right;
     }
   }
