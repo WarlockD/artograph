@@ -1,5 +1,5 @@
 import SceneNode from '../SceneNode';
-import { audio } from '../screen';
+import { audio } from '../ScreenNode';
 
 export default class ScriptNode extends SceneNode {
   static nodeName = 'Time';

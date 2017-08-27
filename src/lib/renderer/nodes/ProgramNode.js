@@ -1,10 +1,5 @@
 import SceneNode from '../SceneNode';
-import {
-  gl,
-  createTexture,
-  createProgram,
-  getSize,
-} from '../screen';
+import { gl, ScreenNode } from '../ScreenNode';
 
 const uniformTypeMapping = {
   float: 'uniform1f',
@@ -49,7 +44,7 @@ export default class ProgramNode extends SceneNode {
 
     this.program = null;
 
-    this.rendererSize = getSize();
+    this.rendererSize = ScreenNode.getRendererSize();
     this.initFramebuffer(this.rendererSize.width, this.rendererSize.height);
 
     if (definition) this.loadDefinition(definition);
@@ -64,7 +59,7 @@ export default class ProgramNode extends SceneNode {
       },
     });
 
-    this.program = createProgram(definition.shader);
+    this.program = ScreenNode.createProgram(definition.shader);
 
     this.aPosition = gl.getAttribLocation(this.program, 'aPosition');
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -81,7 +76,7 @@ export default class ProgramNode extends SceneNode {
     if (this.framebuffer) gl.deleteFramebuffer(this.framebuffer);
     if (this.result) gl.deleteFramebuffer(this.result);
 
-    this.result = createTexture();
+    this.result = ScreenNode.createTexture();
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     this.framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
@@ -91,7 +86,7 @@ export default class ProgramNode extends SceneNode {
   update(inputs) {
     if (!this.program) return;
 
-    const currentSize = getSize();
+    const currentSize = ScreenNode.getRendererSize();
 
     if (currentSize.toString() !== this.rendererSize.toString()) {
       this.initFramebuffer(currentSize.width, currentSize.height);

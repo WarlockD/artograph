@@ -3,15 +3,23 @@ import ReactDOM from 'react-dom';
 
 import { bound, keyboardHelper } from './lib/utils';
 
-import ScreenNode from './lib/renderer/nodes/ScreenNode';
 import SceneGraph from './lib/renderer/SceneGraph';
 import SceneNode from './lib/renderer/SceneNode';
+import {
+  ScreenNode
+} from './lib/renderer/ScreenNode';
 
 import GraphView from './components/GraphView';
 import NodePicker from './components/NodePicker';
 
 const scene = new SceneGraph();
+scene.attachNode(ScreenNode);
 // benchmark(100);
+
+function updateScreen() {
+  scene.run(ScreenNode);
+  requestAnimationFrame(updateScreen);
+}
 
 class Page extends React.Component {
   screen = null;
@@ -34,21 +42,8 @@ class Page extends React.Component {
       },
     });
 
-    scene.on('node.attached', (node) => {
-      if (node instanceof ScreenNode && !this.screen) {
-        this.screen = node;
-        node.setTarget(this.target);
-      }
-    });
-
-    this.updateScreen();
-  }
-
-  updateScreen = () => {
-    if (this.screen) {
-      scene.run(this.screen);
-    }
-    requestAnimationFrame(this.updateScreen);
+    ScreenNode.setTarget(this.target);
+    updateScreen();
   }
 
   @bound

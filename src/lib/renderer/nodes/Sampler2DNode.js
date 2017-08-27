@@ -1,6 +1,6 @@
 import SceneNode from '../SceneNode';
 import { toPowerOfTwo } from '../../math';
-import { gl, createTexture } from '../screen';
+import { gl, ScreenNode } from '../ScreenNode';
 
 function loadImageFromUrl(sourceUrl) {
   const image = new Image();
@@ -29,7 +29,7 @@ export default class Sampler2DNode extends SceneNode {
   async loadFromUrl(url) {
     this.image = await loadImageFromUrl(url);
     if (this.texture) gl.deleteTexture(this.texture);
-    this.texture = createTexture(this.image);
+    this.texture = ScreenNode.createTexture(this.image);
     this.set('texture', this.texture);
   }
 
