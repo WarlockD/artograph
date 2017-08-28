@@ -5,8 +5,20 @@ let updateCounter = 0;
 
 export default class SceneNode {
   constructor(schema) {
+    this.id = null;
     this.locked = 0;
     if (schema) this.updateSchema(schema);
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      type: this.constructor.name,
+    };
+  }
+
+  fromJSON() {
+    // Do nothing by default
   }
 
   lockSchema() {

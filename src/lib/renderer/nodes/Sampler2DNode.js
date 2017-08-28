@@ -15,7 +15,7 @@ function loadImageFromUrl(sourceUrl) {
 export default class Sampler2DNode extends SceneNode {
   static nodeName = 'Image';
 
-  constructor(imageUrl) {
+  constructor() {
     super({
       name: Sampler2DNode.nodeName,
       outputs: {
@@ -23,11 +23,11 @@ export default class Sampler2DNode extends SceneNode {
       },
     });
     this.texture = null;
-    if (imageUrl) this.loadFromUrl(imageUrl);
   }
 
   async loadFromUrl(url) {
     this.image = await loadImageFromUrl(url);
+    this.url = url;
     if (this.texture) gl.deleteTexture(this.texture);
     this.texture = ScreenNode.createTexture(this.image);
     this.set('texture', this.texture);
@@ -35,5 +35,15 @@ export default class Sampler2DNode extends SceneNode {
 
   getSize() {
     return toPowerOfTwo(Math.max(this.image.width, this.image.height));
+  }
+
+  toJSON() {
+    const result = super.toJSON();
+    result.url = this.url;
+    return result;
+  }
+
+  async fromJSON(json) {
+    await this.loadFromUrl(json.url);
   }
 }

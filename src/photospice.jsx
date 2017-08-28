@@ -3,15 +3,16 @@ import ReactDOM from 'react-dom';
 
 import { bound, keyboardHelper } from './lib/utils';
 
-import SceneGraph from './lib/renderer/SceneGraph';
+import SceneGraph from './lib/renderer/SerializableSceneGraph';
 import SceneNode from './lib/renderer/SceneNode';
-import {
-  ScreenNode
-} from './lib/renderer/ScreenNode';
+import NodeFactory from './lib/renderer/NodeFactory';
 
 import GraphView from './components/GraphView';
 import NodePicker from './components/NodePicker';
 
+import { loadObject, saveObject } from './lib/bigObjectStore';
+
+const ScreenNode = NodeFactory.createNode('ScreenNode');
 const scene = new SceneGraph();
 scene.attachNode(ScreenNode);
 // benchmark(100);
@@ -39,6 +40,13 @@ class Page extends React.Component {
         this.setState({
           isPickerOpened: true,
         });
+      },
+      'F6': async () => {
+        saveObject('quicksave', await scene.toJSON());
+      },
+      'F9': async () => {
+        await scene.fromJSON(await loadObject('quicksave'));
+        this.forceUpdate();
       },
       'Alt+Enter': () => {
         ScreenNode.requestFullscreen();
