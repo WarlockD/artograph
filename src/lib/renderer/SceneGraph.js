@@ -8,9 +8,18 @@ let iterationCounter = 0;
 export default class SceneGraph extends EventEmitter {
   constructor() {
     super();
+    this.clear();
+  }
+
+  clear() {
+    if (this.connections && this.connections.length > 0) {
+      this.connections.slice().forEach((connection) => {
+        this.disconnect(connection);
+      });
+    }
+
     this.nodes = [];
     this.connections = [];
-    this.screenNode = null;
   }
 
   isPresent(node) {
@@ -23,6 +32,7 @@ export default class SceneGraph extends EventEmitter {
     node.id = idCounter++;
     this.nodes.push(node);
     this.emit('node.attached', node);
+    return node.id;
   }
 
   detachNode(node) {
@@ -34,7 +44,7 @@ export default class SceneGraph extends EventEmitter {
     assert(isConnected, 'Node is still connected');
     this.nodes = this.nodes.filter((value) => value !== node);
     this.emit('node.detached', node);
-    delete node.id;
+    node.id = null;
   }
 
   connect(sourceNode, sourcePin, targetNode, targetPin) {
