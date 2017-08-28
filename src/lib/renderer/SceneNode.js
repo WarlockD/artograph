@@ -7,6 +7,7 @@ export default class SceneNode {
   constructor(schema) {
     this.id = null;
     this.locked = 0;
+    this.meta = {};
     if (schema) this.updateSchema(schema);
   }
 
@@ -14,11 +15,12 @@ export default class SceneNode {
     return {
       id: this.id,
       type: this.constructor.name,
+      meta: this.meta,
     };
   }
 
-  fromJSON() {
-    // Do nothing by default
+  async fromJSON(json) {
+    this.meta = json.meta || {};
   }
 
   lockSchema() {

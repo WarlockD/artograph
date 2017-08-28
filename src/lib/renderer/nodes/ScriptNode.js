@@ -78,7 +78,7 @@ export default class ScriptNode extends SceneNode {
   }
 
   async fromJSON(json) {
-    super.fromJSON(json);
+    await super.fromJSON(json);
     this.compile(json.code);
   }
 

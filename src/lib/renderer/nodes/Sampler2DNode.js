@@ -44,7 +44,7 @@ export default class Sampler2DNode extends SceneNode {
   }
 
   async fromJSON(json) {
-    super.fromJSON(json);
+    await super.fromJSON(json);
     await this.loadFromUrl(json.url);
   }
 }

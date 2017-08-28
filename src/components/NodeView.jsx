@@ -8,8 +8,8 @@ export default class NodeView extends React.Component {
     const node = props.node;
     this.pins = [];
     this.state = {
-      posX: 0,
-      posY: 0,
+      posX: node.meta.posX || 0,
+      posY: node.meta.posY || 0,
       outputs: node.outputs,
       inputs: node.inputs,
     };
@@ -83,6 +83,9 @@ export default class NodeView extends React.Component {
   }
 
   componentDidUpdate() {
+    const node = this.props.node;
+    node.meta.posX = this.state.posX;
+    node.meta.posY = this.state.posY;
     this.updateAllPins();
   }
 
