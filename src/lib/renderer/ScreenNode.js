@@ -51,6 +51,14 @@ class ScreenNode extends SceneNode {
     this.initAudio();
 
     this.setRendererSize(1024, 1024);
+
+    window.addEventListener('focus', () => {
+      this.audioNode.gain.value = 1.0;
+    });
+
+    window.addEventListener('blur', () => {
+      this.audioNode.gain.value = 0.0;
+    });
   }
 
   initGL(canvas) {
@@ -98,7 +106,10 @@ class ScreenNode extends SceneNode {
     }
 
     this.audio = new window.AudioContext();
-    this.audioNode = this.audio.destination;
+
+    this.audioNode = this.audio.createGain();
+    this.audioNode.gain.value = 1.0;
+    this.audioNode.connect(this.audio.destination);
   }
 
   createProgram(fragmentShaderSource, vertexShaderSource = passthroughVS) {
