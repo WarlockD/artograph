@@ -1,7 +1,7 @@
 import SceneNode from '../SceneNode';
 import { audio } from '../ScreenNode';
 
-export default class ScriptNode extends SceneNode {
+export default class TimeNode extends SceneNode {
   static nodeName = 'Time';
 
   constructor() {
