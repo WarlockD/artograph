@@ -8,6 +8,7 @@ $node-view-min-width: 100px;
   box-shadow: 0 0 10px black;
 
   .node-view-header {
+    cursor: move;
     user-select: none;
     min-height: $size-text;
     padding: 0 $interval-component;
