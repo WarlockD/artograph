@@ -1,11 +1,11 @@
 import SceneNode from '../SceneNode';
 import { audio } from '../ScreenNode';
 
-export default class OscNode extends SceneNode {
+export default class AudioMixerNode extends SceneNode {
   static nodeName = 'Mixer';
   constructor() {
     super({
-      name: OscNode.nodeName,
+      name: AudioMixerNode.nodeName,
       inputs: {
         in1: {
           name: 'In 1',
