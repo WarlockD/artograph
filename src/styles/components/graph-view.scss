@@ -39,6 +39,7 @@
       }
 
       path {
+        pointer-events: none;
         fill: none;
         stroke: $palette-primary;
         stroke-width: 2px;

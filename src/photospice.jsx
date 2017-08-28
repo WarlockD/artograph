@@ -14,8 +14,8 @@ import { loadObject, saveObject } from './lib/bigObjectStore';
 
 const ScreenNode = NodeFactory.createNode('ScreenNode');
 const scene = new SceneGraph();
-scene.attachNode(ScreenNode);
 // benchmark(100);
+scene.attachNode(ScreenNode);
 
 function updateScreen() {
   scene.run(ScreenNode);
@@ -90,7 +90,7 @@ function benchmark(count = 100) {
           out: { type: 'float', name: 'Value' },
         },
       });
-      this.set('value', value);
+      this.set('out', value);
     }
   }
 
