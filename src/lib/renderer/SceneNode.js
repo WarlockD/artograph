@@ -6,7 +6,6 @@ let updateCounter = 0;
 export default class SceneNode {
   constructor(schema) {
     this.id = null;
-    this.locked = 0;
     this.meta = {};
     if (schema) this.updateSchema(schema);
   }
@@ -23,26 +22,42 @@ export default class SceneNode {
     this.meta = json.meta || {};
   }
 
-  lockSchema() {
-    this.locked += 1;
-  }
+  _updatePins(currentSchema, newSchema) {
+    if (currentSchema) {
+      for (let pinName in currentSchema) {
+        const isConnected = currentSchema[pinName] &&
+          currentSchema[pinName].connections > 0;
+        assert(
+          isConnected && !newSchema[pinName],
+          'Removal of connected pins is not allowed');
+        assert(
+          isConnected && newSchema[pinName].type !== currentSchema[pinName].type,
+          'Changing schema of connected pins is not allowed');
+      }
+    }
 
-  unlockSchema() {
-    // NOTE: throw an error maybe?
-    if (this.locked === 0) return;
+    // All additional pins are allowed
 
-    this.locked -= 1;
+    let result = {};
+
+    for (let pinName in newSchema) {
+      let pin = currentSchema && pinName in currentSchema
+        ? currentSchema[pinName]
+        : {};
+      pin.name = newSchema[pinName].name;
+      pin.type = newSchema[pinName].type;
+      pin.value = newSchema[pinName].value;
+      result[pinName] = pin;
+    }
+
+    return result;
   }
 
   updateSchema(schema) {
-    // With this I'm trying to ensure that user cannot change schema if
-    // node has some connections, since this introduces unneeded complexity.
-    // See also SceneGraph.connect and SceneGraph.disconnect
-    assert(this.locked > 0, 'Cannot change schema of locked node!');
+    this.inputs = this._updatePins(this.inputs, schema.inputs);
+    this.outputs = this._updatePins(this.outputs, schema.outputs);
 
     this.name = schema.name || 'Node';
-    this.inputs = cloneDeep(schema.inputs);
-    this.outputs = cloneDeep(schema.outputs);
   }
 
   set(pinName, value) {
@@ -56,11 +71,19 @@ export default class SceneNode {
   }
 
   onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin) {
-    // Do nothing by default
+    // Count connections to pin
+    const pin = this === sourceNode
+      ? this.outputs[sourcePin]
+      : this.inputs[targetPin];
+    pin.connections = (pin.connections || 0) + 1;
   }
 
   onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin) {
-    // Do nothing by default
+    // Count connections to pin
+    const pin = this === sourceNode
+      ? this.outputs[sourcePin]
+      : this.inputs[targetPin];
+    pin.connections = (pin.connections || 0) - 1;
   }
 
   update() {

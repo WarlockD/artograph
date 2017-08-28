@@ -37,12 +37,14 @@ export default class AudioMixerNode extends SceneNode {
   }
 
   onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin) {
+    super.onBeforeConnect(sourceNode, sourcePin, targetNode, targetPin);
     if (sourceNode === this) {
       this.audioNode.connect(targetNode.audioNode);
     }
   }
 
   onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin) {
+    super.onBeforeDisconnect(sourceNode, sourcePin, targetNode, targetPin);
     if (sourceNode === this) {
       this.audioNode.disconnect(targetNode.audioNode);
     }
