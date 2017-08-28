@@ -84,6 +84,12 @@ export default class NodePicker extends React.Component {
     });
   }
 
+  componentDidUpdate() {
+    this.body
+      .querySelector('.selected')
+      .scrollIntoView(false);
+  }
+
   render() {
     const pickerClass = classes('node-picker', {
       active: this.props.isOpened,
