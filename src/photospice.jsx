@@ -42,7 +42,8 @@ class Page extends React.Component {
       },
     });
 
-    ScreenNode.setTarget(this.target);
+    this.imageContainer.appendChild(ScreenNode.canvas);
+
     updateScreen();
   }
 
@@ -54,8 +55,9 @@ class Page extends React.Component {
   render() {
     return (
       <div className='l-photospice'>
-        <div className='result-image'>
-          <canvas ref={(target) => this.target = target} />
+        <div
+          className='result-image'
+          ref={(container) => this.imageContainer = container}>
         </div>
         <GraphView graph={scene} />
         <div className='l-photospice-node-picker'>

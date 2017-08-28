@@ -30,7 +30,7 @@ const vertexData = new Float32Array([
 ]);
 
 class ScreenNode extends SceneNode {
-  constructor(targetCanvas) {
+  constructor() {
     super({
       name: 'Screen',
       inputs: {
@@ -54,8 +54,6 @@ class ScreenNode extends SceneNode {
         },
       },
     });
-
-    if (targetCanvas) this.setTarget(targetCanvas);
 
     this.canvas = document.createElement('canvas');
 
@@ -201,10 +199,6 @@ class ScreenNode extends SceneNode {
     return canvas;
   }
 
-  setTarget(target) {
-    this.target = target;
-  }
-
   update(inputs) {
     const canvas = this.canvas;
     const gl = this.gl;
@@ -217,11 +211,6 @@ class ScreenNode extends SceneNode {
     gl.uniform1i(this.uImage, inputs.uImage);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-    this.target.width = canvas.width;
-    this.target.height = canvas.height;
-    const ctx = this.target.getContext('2d');
-    ctx.drawImage(canvas, 0, 0);
   }
 }
 

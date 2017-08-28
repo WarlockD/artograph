@@ -39,6 +39,6 @@ export default class ProgramNodeView extends NodeView {
         onClick={() => this.fileInput.click()}>
         Upload
       </button>
-    </div>;
+    </div>
   }
 }
