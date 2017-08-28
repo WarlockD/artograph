@@ -42,16 +42,6 @@ class ScreenNode extends SceneNode {
           type: 'sound',
           name: 'Sound',
         },
-        width: {
-          name: 'Width',
-          type: 'float',
-          value: 2048,
-        },
-        height: {
-          name: 'Height',
-          type: 'float',
-          value: 2048,
-        },
       },
     });
 
