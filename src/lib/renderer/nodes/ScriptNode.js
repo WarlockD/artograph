@@ -1,5 +1,21 @@
 import SceneNode from '../SceneNode';
 
+const prelude = `
+  function nfreq(note, octave = 2, base = 55) {
+    return base * Math.pow(2, (note + (octave * 12)) / 12);
+  }
+
+  function seq(time, data) {
+    return data[time % data.length | 0];
+  }
+
+  function nseq(time, data, octave) {
+    const note = data[time % data.length | 0];
+    if (typeof note !== 'number') return 0;
+    return nfreq(note, octave);
+  }
+`;
+
 export default class ScriptNode extends SceneNode {
   static nodeName = 'Script';
 
@@ -38,6 +54,7 @@ export default class ScriptNode extends SceneNode {
       'use strict';
 
       ${globals}
+      ${prelude}
 
       (function(input) {
         let a = 0, b = 0, c = 0, d = 0;
@@ -52,6 +69,17 @@ export default class ScriptNode extends SceneNode {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  toJSON() {
+    const result = super.toJSON();
+    result.code = this.code;
+    return result;
+  }
+
+  async fromJSON(json) {
+    super.fromJSON(json);
+    this.compile(json.code);
   }
 
   update(inputs) {
