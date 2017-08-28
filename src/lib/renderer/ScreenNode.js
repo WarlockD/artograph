@@ -199,8 +199,19 @@ class ScreenNode extends SceneNode {
     return canvas;
   }
 
-  update(inputs) {
+  requestFullscreen() {
     const canvas = this.canvas;
+
+    if (canvas.requestFullscreen) {
+      canvas.requestFullscreen();
+    } else if (canvas.mozRequestFullScreen) {
+      canvas.mozRequestFullScreen();
+    } else if (canvas.webkitRequestFullscreen) {
+      canvas.webkitRequestFullscreen();
+    }
+  }
+
+  update(inputs) {
     const gl = this.gl;
 
     gl.useProgram(this.program);

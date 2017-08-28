@@ -40,6 +40,9 @@ class Page extends React.Component {
           isPickerOpened: true,
         });
       },
+      'Alt+Enter': () => {
+        ScreenNode.requestFullscreen();
+      },
     });
 
     this.imageContainer.appendChild(ScreenNode.canvas);
