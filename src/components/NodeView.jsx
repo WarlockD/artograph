@@ -6,7 +6,6 @@ export default class NodeView extends React.Component {
   constructor(props) {
     super(props);
     const node = props.node;
-    this.pins = [];
     this.state = {
       posX: node.meta.posX || 0,
       posY: node.meta.posY || 0,
@@ -36,24 +35,21 @@ export default class NodeView extends React.Component {
     const bodyRect = this.nodeBody.getBoundingClientRect();
     const pins = this.nodeBody.querySelectorAll('.node-view-pin');
     const len = pins.length;
+    const result = {};
     let i;
 
     for (i = 0; i < len; i += 1) {
       const pin = pins[i];
       const isOutput = pin.dataset.isOutput;
       const pinRect = pin.getBoundingClientRect();
-      this.pins[i] = {
-        name: pin.dataset.pinName,
+      result[pin.dataset.pinName] = {
+        pinName: pin.dataset.pinName,
         x: isOutput ? bodyRect.left + bodyRect.width : bodyRect.left,
         y: pinRect.top + pinRect.height / 2,
       };
     }
 
-    if (len < this.pins.length) {
-      this.pins.splice(i, this.pins.length - len);
-    }
-
-    this.props.updatePins(node, this.pins);
+    this.props.updatePins(node, result);
   }
 
   renderPins(pins, isOutput) {

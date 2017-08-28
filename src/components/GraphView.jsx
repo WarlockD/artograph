@@ -8,8 +8,8 @@ class PinsRegistry {
     this.pins = [];
   }
 
-  updatePin(node, pinName, position) {
-    let nodePins = this.index.get(node) || {};
+  updateNodePin(node, pinName, position) {
+    const nodePins = this.getNodePins(node) || {};
     let isNewPin = false;
 
     if (nodePins[pinName]) {
@@ -32,18 +32,37 @@ class PinsRegistry {
     return isNewPin;
   }
 
-  getPin(node, pin) {
-    const nodePins = this.index.get(node);
-    if (!nodePins) return;
-    const element = nodePins[pin];
-    return element;
+  updateNodePins(node, pins) {
+    let schemaChanged = false;
+
+    const nodePins = this.getNodePins(node);
+
+    // Check if pin was removed
+    for (let pinName in nodePins) {
+      if (!pins[pinName]) {
+        schemaChanged = true;
+        this.unregisterNodePin(node, pinName);
+      }
+    }
+
+    // Check if pin was added or updated
+    for (let pinName in pins) {
+      const isNewPin = this.updateNodePin(node, pinName, pins[pinName]);
+      schemaChanged = isNewPin || schemaChanged;
+    }
+
+    return schemaChanged;
   }
 
-  unregisterPins(node) {
-    this.index.delete(node);
-    this.pins = this.pins.filter((pin) => {
-      return pin.node !== node;
-    });
+  getNodePins(node) {
+    return this.index.get(node);
+  }
+
+  getNodePin(node, pinName) {
+    const nodePins = this.getNodePins(node);
+    if (!nodePins) return;
+    const element = nodePins[pinName];
+    return element;
   }
 
   getPinsNear(px, py, radius) {
@@ -65,6 +84,21 @@ class PinsRegistry {
   getPinNear(px, py, radius) {
     const pins = this.getPinsNear(px, py, radius);
     if (pins.length > 0) return pins[0];
+  }
+
+  unregisterNodePins(node) {
+    this.index.delete(node);
+    this.pins = this.pins.filter((pin) => {
+      return pin.node !== node;
+    });
+  }
+
+  unregisterNodePin(node, pinName) {
+    const nodePins = this.index.get(node);
+    if (nodePins && nodePins[pinName]) delete nodePins[pinName];
+    this.pins = this.pins.filter((pin) => {
+      return !(pin.node === node && pin.pinName === pinName);
+    });
   }
 }
 
@@ -94,11 +128,11 @@ class Connection extends React.Component {
     const pins = this.props.pins;
 
     // Output pin position
-    const o = pins.getPin(connection.sourceNode, connection.sourcePin);
+    const o = pins.getNodePin(connection.sourceNode, connection.sourcePin);
     if (!o) return null;
 
     // Input pin position
-    const i = pins.getPin(connection.targetNode, connection.targetPin);
+    const i = pins.getNodePin(connection.targetNode, connection.targetPin);
     if (!i) return null;
 
     const center = o.x + (i.x - o.x) / 2;
@@ -220,13 +254,13 @@ export default class GraphView extends React.Component {
       candidateConnection = {
         targetNode: connection.targetNode,
         targetPin: connection.targetPin,
-        pinPosition: this.pinsRegistry.getPin(connection.targetNode, connection.targetPin),
+        pinPosition: this.pinsRegistry.getNodePin(connection.targetNode, connection.targetPin),
       };
     } else {
       candidateConnection = {
         sourceNode: connection.sourceNode,
         sourcePin: connection.sourcePin,
-        pinPosition: this.pinsRegistry.getPin(connection.sourceNode, connection.sourcePin),
+        pinPosition: this.pinsRegistry.getNodePin(connection.sourceNode, connection.sourcePin),
       };
     }
 
@@ -255,7 +289,7 @@ export default class GraphView extends React.Component {
   detachNode(node) {
     try {
       this.props.graph.detachNode(node);
-      this.pinsRegistry.unregisterPins(node);
+      this.pinsRegistry.unregisterNodePins(node);
       this.forceUpdate();
     } catch(e) {
       console.error(e);
@@ -264,12 +298,8 @@ export default class GraphView extends React.Component {
 
   @bound
   updateNodePins(node, pins) {
-    let updateRequired = false;
-
-    for (let i = 0, len = pins.length; i < len; i += 1) {
-      const pin = pins[i];
-      updateRequired = this.pinsRegistry.updatePin(node, pin.name, pin) || updateRequired;
-    }
+    // TODO: Pin position and schema updates should be handled separately
+    const updateRequired = this.pinsRegistry.updateNodePins(node, pins);
 
     // FIXME: update only connections/pins svg overlay
     if (updateRequired) {

@@ -23,6 +23,8 @@ export default class SceneNode {
   }
 
   _updatePins(currentSchema, newSchema) {
+    if (!newSchema) return newSchema;
+
     if (currentSchema) {
       for (let pinName in currentSchema) {
         const isConnected = currentSchema[pinName] &&
@@ -38,10 +40,10 @@ export default class SceneNode {
 
     // All additional pins are allowed
 
-    let result = {};
+    const result = {};
 
     for (let pinName in newSchema) {
-      let pin = currentSchema && pinName in currentSchema
+      const pin = currentSchema && pinName in currentSchema
         ? currentSchema[pinName]
         : {};
       pin.name = newSchema[pinName].name;
