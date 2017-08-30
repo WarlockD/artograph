@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export function bound(target, key, descriptor) {
   return {
     configurable: false,
@@ -9,44 +7,42 @@ export function bound(target, key, descriptor) {
   };
 }
 
-export function throttle(delay) {
-  return function(target, key, descriptor) {
-    return {
-      configurable: false,
-      get: function() {
-        return _.throttle(descriptor.value, delay);
-      },
-    };
-  }
-}
-
 export function toCssColor(color) {
   return `rgb(${color[0] * 255 | 0}, ${color[1] * 255 | 0}, ${color[2] * 255 | 0})`;
 }
 
 export function classes(...classes) {
-  return classes.reduce((acc, value) => {
-    if (typeof value === 'string') {
-      acc.push(value);
-      return acc;
-    } else if (_.isObject(value)) {
-      return acc.concat(_(value)
-        .pickBy()
-        .keys()
-        .value());
+  return classes.reduce((acc, entry) => {
+    let result = acc;
+
+    if (typeof entry === 'string') {
+      result = acc + ' ' + entry;
+    } else if (entry instanceof Object) {
+      for (let key in entry) {
+        if (entry[key]) {
+          result = result + ' ' + key;
+        }
+      }
     }
-  }, [])
-  .join(' ');
+
+    result;
+  }, '');
+}
+
+function copyPositioning(target, event) {
+  target.pageX = event.pageX;
+  target.pageY = event.pageY;
+  target.clientX = event.clientX;
+  target.clientY = event.clientY;
 }
 
 function mapPointerEvent(event) {
-  const pointDataKeys = ['pageX', 'pageY', 'clientX', 'clientY'];
   const result = {};
   result.isTouchEvent = !!event.touches;
   if (result.isTouchEvent) {
-    _.assign(result, _.pick(event.touches[0], pointDataKeys));
+    copyPositioning(result, event.touches[0]);
   } else {
-    _.assign(result, _.pick(event, pointDataKeys));
+    copyPositioning(result, event);
   }
   result.target = event.target;
   result.original = event;
@@ -54,15 +50,15 @@ function mapPointerEvent(event) {
 }
 
 export function dragHelper(options) {
-  const onStart = typeof options.onStart === 'function' ? options.onStart : _.identity;
-  const onMove = typeof options.onMove === 'function' ? options.onMove : _.identity;
-  const onEnd = typeof options.onEnd === 'function' ? options.onEnd : _.identity;
+  const onStart = typeof options.onStart === 'function' && options.onStart;
+  const onMove = typeof options.onMove === 'function' && options.onMove;
+  const onEnd = typeof options.onEnd === 'function' && options.onEnd;
 
   return function onDragStart(event) {
     if (event.button !== 0) return;
 
     const mappedEvent = mapPointerEvent(event);
-    const init = onStart(mappedEvent);
+    const init = onStart && onStart(mappedEvent);
     const eventNames = mappedEvent.isTouchEvent
       ? ['touchmove', 'touchend']
       : ['mousemove', 'mouseup'];
@@ -75,12 +71,18 @@ export function dragHelper(options) {
 
     function onDragMove(event) {
       event.preventDefault();
-      const mappedEvent = mapPointerEvent(event);
-      onMove(init, mappedEvent);
+
+      if (onMove) {
+        const mappedEvent = mapPointerEvent(event);
+        onMove(init, mappedEvent);
+      }
     }
 
     function onDragEnd(event) {
-      onEnd(event);
+      if (onEnd) {
+        onEnd(event);
+      }
+
       document.removeEventListener(eventNames[0], onDragMove, {
         capture: true,
         passive: false,
