@@ -14,16 +14,17 @@ export default class NodeView extends React.Component {
 
   startNodeMove = dragHelper({
     onStart: (event) => {
-      const container = event.target.getBoundingClientRect();
       return {
-        x: event.pageX - container.left,
-        y: event.pageY - container.top,
+        px: this.state.posX,
+        py: this.state.posY,
+        x0: event.pageX,
+        y0: event.pageY,
       };
     },
     onMove: (start, event) => {
       this.setState({
-        posX: event.pageX - start.x,
-        posY: event.pageY - start.y,
+        posX: start.px + (event.pageX - start.x0),
+        posY: start.py + (event.pageY - start.y0),
       });
     }
   });

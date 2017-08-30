@@ -6,6 +6,7 @@ let updateCounter = 0;
 export default class SceneNode extends EventEmitter {
   constructor(schema) {
     super();
+    this.name = 'Node';
     this.id = null;
     this.meta = {};
     if (schema) this.updateSchema(schema);
@@ -66,7 +67,7 @@ export default class SceneNode extends EventEmitter {
     }
 
     if (schema.name) {
-      this.name = schema.name || 'Node';
+      this.name = schema.name;
     }
 
     this.emit('schema.updated');
