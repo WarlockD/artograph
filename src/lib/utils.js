@@ -1,8 +1,14 @@
 export function bound(target, key, descriptor) {
+  const cacheKey = Symbol();
+
   return {
     configurable: false,
     get: function() {
-      return descriptor.value.bind(this);
+      if (!this[cacheKey]) {
+        this[cacheKey] = descriptor.value.bind(this);
+      }
+
+      return this[cacheKey];
     },
   };
 }
@@ -25,7 +31,7 @@ export function classes(...classes) {
       }
     }
 
-    result;
+    return result;
   }, '');
 }
 
@@ -49,12 +55,12 @@ function mapPointerEvent(event) {
   return result;
 }
 
-export function dragHelper(options) {
+export function dragHelper(options, event) {
   const onStart = typeof options.onStart === 'function' && options.onStart;
   const onMove = typeof options.onMove === 'function' && options.onMove;
   const onEnd = typeof options.onEnd === 'function' && options.onEnd;
 
-  return function onDragStart(event) {
+  function onDragStart(event) {
     if (event.button !== 0) return;
 
     const mappedEvent = mapPointerEvent(event);
@@ -96,6 +102,10 @@ export function dragHelper(options) {
     });
     document.addEventListener(eventNames[1], onDragEnd);
   }
+
+  return !!event
+    ? onDragStart(event)
+    : onDragStart;
 }
 
 export function assert(condition, message) {
