@@ -1,10 +1,11 @@
 import { assert } from '../utils';
-import cloneDeep from 'lodash/cloneDeep';
+import EventEmitter from './EventEmitter';
 
 let updateCounter = 0;
 
-export default class SceneNode {
+export default class SceneNode extends EventEmitter {
   constructor(schema) {
+    super();
     this.id = null;
     this.meta = {};
     if (schema) this.updateSchema(schema);
@@ -60,6 +61,8 @@ export default class SceneNode {
     this.outputs = this._updatePins(this.outputs, schema.outputs);
 
     this.name = schema.name || 'Node';
+
+    this.emit('schema.updated');
   }
 
   set(pinName, value) {

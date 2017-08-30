@@ -9,7 +9,7 @@ class NodeFactory {
       return acc;
     }, {});
 
-    // Since screen node as a singleton it requires special handling
+    // Since screen node is a singleton it requires special handling
     this.mapping['ScreenNode'] = () => ScreenNode;
   }
 

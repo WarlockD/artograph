@@ -10,7 +10,6 @@ class PinsRegistry {
 
   updateNodePin(node, pinName, position) {
     const nodePins = this.getNodePins(node) || {};
-    let isNewPin = false;
 
     if (nodePins[pinName]) {
       nodePins[pinName].x = position.x;
@@ -24,34 +23,23 @@ class PinsRegistry {
         y: position.y,
       };
       this.pins.push(nodePins[pinName]);
-      isNewPin = true;
     }
 
     this.index.set(node, nodePins);
-
-    return isNewPin;
   }
 
   updateNodePins(node, pins) {
-    let schemaChanged = false;
-
     const nodePins = this.getNodePins(node);
 
-    // Check if pin was removed
+    // Unregister removed pins
     for (let pinName in nodePins) {
-      if (!pins[pinName]) {
-        schemaChanged = true;
-        this.unregisterNodePin(node, pinName);
-      }
+      if (!pins[pinName]) this.unregisterNodePin(node, pinName);
     }
 
-    // Check if pin was added or updated
+    // Add/update existing pins
     for (let pinName in pins) {
-      const isNewPin = this.updateNodePin(node, pinName, pins[pinName]);
-      schemaChanged = isNewPin || schemaChanged;
+      this.updateNodePin(node, pinName, pins[pinName]);
     }
-
-    return schemaChanged;
   }
 
   getNodePins(node) {
@@ -102,21 +90,8 @@ class PinsRegistry {
   }
 }
 
-class Pin extends React.Component {
-  update() {
-    this.forceUpdate();
-  }
-
-  render () {
-    const pin = this.props.pin;
-    const cx = pin.x;
-    const cy = pin.y;
-
-    return <g className='graph-view-pin'>
-      <circle onMouseDown={this.props.onDragStart} cx={cx} cy={cy} r='7' />
-    </g>
-  }
-}
+// TODO: Calculate this dynamically or read from SCSS vars
+const CONNECTION_PIN_RADIUS = 8;
 
 class Connection extends React.Component {
   update() {
@@ -143,12 +118,12 @@ class Connection extends React.Component {
         onMouseDown={() => this.props.onDragStart(connection, true)}
         cx={o.x}
         cy={o.y}
-        r='7'/>
+        r={CONNECTION_PIN_RADIUS}/>
       <circle
         onMouseDown={() => this.props.onDragStart(connection, false)}
         cx={i.x}
         cy={i.y}
-        r='7'/>
+        r={CONNECTION_PIN_RADIUS}/>
     </g>;
   }
 }
@@ -210,143 +185,171 @@ class CandidateConnection extends React.Component {
     const pathPoints = `M ${o.x} ${o.y} C ${center} ${o.y} ${center} ${i.y} ${i.x} ${i.y}`;
     return <g className='graph-view-connection'>
       <path d={pathPoints} />
-      <circle cx={o.x} cy={o.y} r='7'/>
-      <circle cx={i.x} cy={i.y} r='7'/>
+      <circle cx={o.x} cy={o.y} r={CONNECTION_PIN_RADIUS}/>
+      <circle cx={i.x} cy={i.y} r={CONNECTION_PIN_RADIUS}/>
     </g>
   }
 }
 
-export default class GraphView extends React.Component {
-  pinsRegistry = new PinsRegistry();
-  state = {
-    candidateConnection: null,
-  };
+class WiringOverlay extends React.Component {
+  constructor(props) {
+    super(props);
 
-  @bound
-  handleNodeUpdate(node) {
-    const connections = this.props.graph.connections;
-    const pins = this.pinsRegistry.pins;
+    this.state = {
+      pins: props.pins,
+      connections: props.connections,
+      // Incomplete connection
+      candidateConnection: null,
+      // Connection being edited
+      currentConnection: null,
+    };
+  }
+
+  updateRelatedWiring(node) {
+    const connections = this.state.connections;
 
     for (let i = 0, len = connections.length; i < len; i += 1) {
       const connection = connections[i];
-      const updateNeeded = (connection.sourceNode === node || connection.targetNode === node) &&
-        connection.uiElement;
-      if (updateNeeded) {
-        connection.uiElement.update();
-      }
-    }
 
-    for (let i = 0, len = pins.length; i < len; i += 1) {
-      const pin = pins[i];
+      // Skip stale connections
+      if (connection.uiElement === null) continue;
 
-      if (pin.uiElement) {
-        pin.uiElement.update();
+      if (connection.sourceNode === node || connection.targetNode === node) {
+        // If node has not rendered connections, we're out of sync
+        // and need to re-render
+        if (!connection.uiElement) return this.forceUpdate();
+
+        connection.uiElement.forceUpdate();
       }
     }
   }
 
   @bound
   handleConnectionDragStart(connection, editOutput) {
-    this.props.graph.disconnect(connection);
+    const pins = this.state.pins;
     let candidateConnection;
 
     if (editOutput) {
       candidateConnection = {
         targetNode: connection.targetNode,
         targetPin: connection.targetPin,
-        pinPosition: this.pinsRegistry.getNodePin(connection.targetNode, connection.targetPin),
+        pinPosition: pins.getNodePin(connection.targetNode, connection.targetPin),
       };
     } else {
       candidateConnection = {
         sourceNode: connection.sourceNode,
         sourcePin: connection.sourcePin,
-        pinPosition: this.pinsRegistry.getNodePin(connection.sourceNode, connection.sourcePin),
+        pinPosition: pins.getNodePin(connection.sourceNode, connection.sourcePin),
       };
     }
 
-    this.setState({ candidateConnection });
+    this.setState({
+      currentConnection: connection,
+      candidateConnection,
+    });
   }
 
   @bound
   handleConnectionDragEnd(connection) {
-    try {
-      if (connection) this.props.graph.connect(connection);
-    } catch (e) {
-      console.error(e);
+    if (this.state.currentConnection) {
+      this.props.onDisconnect(this.state.currentConnection);
     }
 
-    this.setState({ candidateConnection: null });
+    if (connection) {
+      this.props.onConnect(connection);
+    }
+
+    this.setState({
+      currentConnection: null,
+      candidateConnection: null,
+    });
   }
 
-  handleConnectionAddStart(pin) {
-    const candidateConnection = pin.output
-      ? { sourceNode: pin.node, sourcePin: pin.pinName, pinPosition: pin }
-      : { targetNode: pin.node, targetPin: pin.pinName, pinPosition: pin };
+  @bound
+  setCandidate(candidateConnection) {
     this.setState({ candidateConnection });
+  }
+
+  render() {
+    const connections = this.state.connections;
+    const currentConnection = this.state.currentConnection;
+
+    let candidate = null;
+
+    if (this.state.candidateConnection) {
+      candidate = <CandidateConnection
+        candidate={this.state.candidateConnection}
+        onDragEnd={this.handleConnectionDragEnd}
+        pins={this.state.pins}/>
+    }
+
+    return <svg className='graph-view-connections'>
+      {connections.map((connection, index) => {
+        // Hide connection that is being edited currently
+        if (connection === currentConnection) return null;
+
+        return <Connection
+          key={index}
+          ref={(element) => connection.uiElement = element}
+          onDragStart={this.handleConnectionDragStart}
+          connection={connection}
+          pins={this.state.pins}/>
+      })}
+      {candidate}
+    </svg>
+  }
+}
+
+export default class GraphView extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.pins = new PinsRegistry();
+    this.state = {};
   }
 
   @bound
   detachNode(node) {
     try {
       this.props.graph.detachNode(node);
-      this.pinsRegistry.unregisterNodePins(node);
-      this.forceUpdate();
+      this.pins.unregisterNodePins(node);
+      this.wiring.updateRelatedWiring(node);
     } catch(e) {
       console.error(e);
     }
   }
 
   @bound
-  updateNodePins(node, pins) {
-    // TODO: Pin position and schema updates should be handled separately
-    const updateRequired = this.pinsRegistry.updateNodePins(node, pins);
+  handlePinsUpdate(node, pins) {
+    this.pins.updateNodePins(node, pins);
+    this.wiring.updateRelatedWiring(node);
+  }
 
-    // FIXME: update only connections/pins svg overlay
-    if (updateRequired) {
-      this.forceUpdate();
-    } else {
-      this.handleNodeUpdate(node);
+  @bound
+  handleConnect(connection) {
+    try {
+      this.props.graph.connect(connection);
+    } catch (error) {
+      console.error(error);
     }
   }
 
-  renderConnections(connections) {
-    const result = [];
-
-    for (let i = 0, len = connections.length; i < len; i += 1) {
-      const connection = connections[i];
-      result.push(<Connection
-        key={i}
-        ref={(element) => connection.uiElement = element}
-        onDragStart={this.handleConnectionDragStart}
-        connection={connection}
-        pins={this.pinsRegistry}/>);
+  @bound
+  handleDisconnect(connection) {
+    try {
+      this.props.graph.disconnect(connection);
+    } catch (error) {
+      console.error(error);
     }
-
-    if (this.state.candidateConnection) {
-      result.push(<CandidateConnection
-        key={result.length}
-        candidate={this.state.candidateConnection}
-        onDragEnd={this.handleConnectionDragEnd}
-        pins={this.pinsRegistry}/>);
-    }
-
-    return result;
   }
 
-  renderPins(pins) {
-    const result = [];
-
-    for (let i = 0, len = pins.length; i < len; i += 1) {
-      const pin = pins[i];
-
-      result.push(<Pin
-        key={i}
-        ref={(element) => pins[i].uiElement = element}
-        onDragStart={() => this.handleConnectionAddStart(pin)}
-        pin={pin}/>);
-    }
-
-    return result;
+  @bound
+  handleConnectionRequest(node, pinName) {
+    const pin = this.pins.getNodePin(node, pinName);
+    const candidateConnection = pin.output
+      ? { sourceNode: pin.node, sourcePin: pin.pinName, pinPosition: pin }
+      : { targetNode: pin.node, targetPin: pin.pinName, pinPosition: pin };
+    this.wiring.setCandidate(candidateConnection);
   }
 
   renderNodes(nodes) {
@@ -354,20 +357,25 @@ export default class GraphView extends React.Component {
       return <MetaNodeView
         key={node.id}
         node={node}
-        updatePins={this.updateNodePins}
+        onPinsUpdate={this.handlePinsUpdate}
+        onConnectionRequest={this.handleConnectionRequest}
         onRemoveRequest={this.detachNode}/>
     });
   }
+
+  refWiring = (wiring) => { this.wiring = wiring };
 
   render() {
     const graph = this.props.graph;
 
     return <div className='graph-view'>
       {this.renderNodes(graph.nodes)}
-      <svg className='graph-view-connections'>
-        {this.renderPins(this.pinsRegistry.pins)}
-        {this.renderConnections(graph.connections)}
-      </svg>
+      <WiringOverlay
+        ref={this.refWiring}
+        connections={graph.connections}
+        pins={this.pins}
+        onConnect={this.handleConnect}
+        onDisconnect={this.handleDisconnect}/>
     </div>
   }
 }

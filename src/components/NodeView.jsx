@@ -31,51 +31,37 @@ export default class NodeView extends React.Component {
   });
 
   updateAllPins() {
+    // TODO: Calc relative positions on schema change once and
+    // update using only node position.
     const node = this.props.node;
-    const bodyRect = this.nodeBody.getBoundingClientRect();
     const pins = this.nodeBody.querySelectorAll('.node-view-pin');
-    const len = pins.length;
     const result = {};
-    let i;
 
-    for (i = 0; i < len; i += 1) {
+    for (let i = 0, len = pins.length; i < len; i += 1) {
       const pin = pins[i];
-      const isOutput = pin.dataset.isOutput;
       const pinRect = pin.getBoundingClientRect();
-      result[pin.dataset.pinName] = {
-        pinName: pin.dataset.pinName,
-        x: isOutput ? bodyRect.left + bodyRect.width : bodyRect.left,
+      const pinName = pin.dataset.pinName;
+      result[pinName] = {
+        x: pinRect.left + pinRect.width / 2,
         y: pinRect.top + pinRect.height / 2,
       };
     }
 
-    this.props.updatePins(node, result);
-  }
-
-  renderPins(pins, isOutput) {
-    const result = [];
-
-    for (let key in pins) {
-      const pin = pins[key];
-      result.push(<li
-        className='node-view-pin'
-        key={key}
-        data-pin-name={key}
-        data-is-output={isOutput}>
-        {pin.name}
-      </li>);
-    }
-
-    return result;
+    this.props.onPinsUpdate(node, result);
   }
 
   @bound
-  requestRemoval() {
+  onRemoveRequest() {
     this.props.onRemoveRequest(this.props.node);
   }
 
+  handleSchemaUpdate = () => {
+    this.forceUpdate();
+  }
+
   componentDidMount() {
-    this.updateAllPins();
+    this.handleSchemaUpdate();
+    this.props.node.on('schema.updated', this.handleSchemaUpdate);
   }
 
   componentDidUpdate() {
@@ -85,8 +71,29 @@ export default class NodeView extends React.Component {
     this.updateAllPins();
   }
 
+  componentWillUnmount() {
+    this.props.node.off('schema.updated', this.handleSchemaUpdate);
+  }
+
   renderContents() {
     return null;
+  }
+
+  renderPins(pins, isOutput) {
+    const result = [];
+
+    for (let key in pins) {
+      const pin = pins[key];
+      result.push(<li key={key}>
+        <div
+          className='node-view-pin'
+          onMouseDown={() => this.props.onConnectionRequest(this.props.node, key)}
+          data-pin-name={key}/>
+        {pin.name}
+      </li>);
+    }
+
+    return result;
   }
 
   render() {
@@ -106,7 +113,7 @@ export default class NodeView extends React.Component {
           <div
             className='node-view-actions'
             onMouseDown={(event) => event.stopPropagation()}>
-            <span onClick={this.requestRemoval}>X</span>
+            <span onClick={this.onRemoveRequest}>X</span>
           </div>
         </div>
         <div
