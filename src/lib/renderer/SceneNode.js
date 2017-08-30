@@ -57,10 +57,17 @@ export default class SceneNode extends EventEmitter {
   }
 
   updateSchema(schema) {
-    this.inputs = this._updatePins(this.inputs, schema.inputs);
-    this.outputs = this._updatePins(this.outputs, schema.outputs);
+    if (schema.inputs) {
+      this.inputs = this._updatePins(this.inputs, schema.inputs);
+    }
 
-    this.name = schema.name || 'Node';
+    if (schema.outputs) {
+      this.outputs = this._updatePins(this.outputs, schema.outputs);
+    }
+
+    if (schema.name) {
+      this.name = schema.name || 'Node';
+    }
 
     this.emit('schema.updated');
   }

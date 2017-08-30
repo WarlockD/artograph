@@ -8,9 +8,8 @@ export default class NodeView extends React.Component {
     this.state = {
       posX: node.meta.posX || 0,
       posY: node.meta.posY || 0,
-      outputs: node.outputs,
-      inputs: node.inputs,
     };
+    this.pins = null;
   }
 
   startNodeMove = dragHelper({
@@ -30,30 +29,35 @@ export default class NodeView extends React.Component {
   });
 
   updateAllPins() {
+    const pins = this.initPinPositions();
     const node = this.props.node;
-    for (let pinName in this.pins) {
-      const pin = this.pins[pinName];
+    for (let pinName in pins) {
+      const pin = pins[pinName];
       pin.x = pin.x0 + this.state.posX;
       pin.y = pin.y0 + this.state.posY;
     }
-    this.props.onPinsUpdate(node, this.pins);
+    this.props.onPinsUpdate(node, pins);
   }
 
   initPinPositions() {
-    const nodeBody = this.nodeBody;
-    const bodyRect = nodeBody.getBoundingClientRect();
-    const pins = nodeBody.querySelectorAll('.node-view-pin');
-    this.pins = {};
+    if (!this.pins) {
+      this.pins = {};
+      const nodeBody = this.nodeBody;
+      const bodyRect = nodeBody.getBoundingClientRect();
+      const pins = nodeBody.querySelectorAll('.node-view-pin');
 
-    for (let i = 0, len = pins.length; i < len; i += 1) {
-      const pin = pins[i];
-      const pinRect = pin.getBoundingClientRect();
-      const pinName = pin.dataset.pinName;
-      this.pins[pinName] = {
-        x0: (pinRect.left + pinRect.width / 2) - bodyRect.left,
-        y0: (pinRect.top + pinRect.height / 2) - bodyRect.top,
-      };
+      for (let i = 0, len = pins.length; i < len; i += 1) {
+        const pin = pins[i];
+        const pinRect = pin.getBoundingClientRect();
+        const pinName = pin.dataset.pinName;
+        this.pins[pinName] = {
+          x0: (pinRect.left + pinRect.width / 2) - bodyRect.left,
+          y0: (pinRect.top + pinRect.height / 2) - bodyRect.top,
+        };
+      }
     }
+
+    return this.pins;
   }
 
   @bound
@@ -62,11 +66,11 @@ export default class NodeView extends React.Component {
   }
 
   handleSchemaUpdate = () => {
+    this.pins = null;
     this.forceUpdate();
   }
 
   componentDidMount() {
-    this.initPinPositions();
     requestAnimationFrame(() => {
       this.updateAllPins();
     });
@@ -129,10 +133,10 @@ export default class NodeView extends React.Component {
           {this.renderContents()}
           <div className='node-view-pins'>
             <ul className='node-view-inputs'>
-              {this.renderPins(this.state.inputs)}
+              {this.renderPins(node.inputs)}
             </ul>
             <ul className='node-view-outputs'>
-              {this.renderPins(this.state.outputs, true)}
+              {this.renderPins(node.outputs, true)}
             </ul>
           </div>
         </div>
