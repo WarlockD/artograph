@@ -14,7 +14,7 @@ import { loadObject, saveObject } from './lib/bigObjectStore';
 
 const ScreenNode = NodeFactory.createNode('ScreenNode');
 const scene = new SceneGraph();
-benchmark(100);
+// benchmark(500);
 scene.attachNode(ScreenNode);
 
 function updateScreen() {

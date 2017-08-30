@@ -94,8 +94,14 @@ class PinsRegistry {
 const CONNECTION_PIN_RADIUS = 8;
 
 class Connection extends React.Component {
-  update() {
-    this.forceUpdate();
+  handleOutputDragStart = () => {
+    const connection = this.props.connection;
+    this.props.onDragStart(connection, true);
+  }
+
+  handleInputDragStart = () => {
+    const connection = this.props.connection;
+    this.props.onDragStart(connection, false);
   }
 
   render() {
@@ -115,12 +121,12 @@ class Connection extends React.Component {
     return <g className='graph-view-connection'>
       <path d={pathPoints} />
       <circle
-        onMouseDown={() => this.props.onDragStart(connection, true)}
+        onMouseDown={this.handleOutputDragStart}
         cx={o.x}
         cy={o.y}
         r={CONNECTION_PIN_RADIUS}/>
       <circle
-        onMouseDown={() => this.props.onDragStart(connection, false)}
+        onMouseDown={this.handleInputDragStart}
         cx={i.x}
         cy={i.y}
         r={CONNECTION_PIN_RADIUS}/>
@@ -196,8 +202,6 @@ class WiringOverlay extends React.Component {
     super(props);
 
     this.state = {
-      pins: props.pins,
-      connections: props.connections,
       // Incomplete connection
       candidateConnection: null,
       // Connection being edited
@@ -206,7 +210,7 @@ class WiringOverlay extends React.Component {
   }
 
   updateRelatedWiring(node) {
-    const connections = this.state.connections;
+    const connections = this.props.connections;
 
     for (let i = 0, len = connections.length; i < len; i += 1) {
       const connection = connections[i];
@@ -215,10 +219,6 @@ class WiringOverlay extends React.Component {
       if (connection.uiElement === null) continue;
 
       if (connection.sourceNode === node || connection.targetNode === node) {
-        // If node has not rendered connections, we're out of sync
-        // and need to re-render
-        if (!connection.uiElement) return this.forceUpdate();
-
         connection.uiElement.forceUpdate();
       }
     }
@@ -226,7 +226,7 @@ class WiringOverlay extends React.Component {
 
   @bound
   handleConnectionDragStart(connection, editOutput) {
-    const pins = this.state.pins;
+    const pins = this.props.pins;
     let candidateConnection;
 
     if (editOutput) {
@@ -271,29 +271,26 @@ class WiringOverlay extends React.Component {
   }
 
   render() {
-    const connections = this.state.connections;
-    const currentConnection = this.state.currentConnection;
-
     let candidate = null;
 
     if (this.state.candidateConnection) {
       candidate = <CandidateConnection
         candidate={this.state.candidateConnection}
         onDragEnd={this.handleConnectionDragEnd}
-        pins={this.state.pins}/>
+        pins={this.props.pins}/>
     }
 
     return <svg className='graph-view-connections'>
-      {connections.map((connection, index) => {
+      {this.props.connections.map((connection, index) => {
         // Hide connection that is being edited currently
-        if (connection === currentConnection) return null;
+        if (connection === this.state.currentConnection) return null;
 
         return <Connection
           key={index}
           ref={(element) => connection.uiElement = element}
           onDragStart={this.handleConnectionDragStart}
           connection={connection}
-          pins={this.state.pins}/>
+          pins={this.props.pins}/>
       })}
       {candidate}
     </svg>
@@ -313,7 +310,7 @@ export default class GraphView extends React.Component {
     try {
       this.props.graph.detachNode(node);
       this.pins.unregisterNodePins(node);
-      this.wiring.updateRelatedWiring(node);
+      this.forceUpdate();
     } catch(e) {
       console.error(e);
     }

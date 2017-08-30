@@ -1,6 +1,5 @@
 import React from 'react';
 import { bound, dragHelper } from '../lib/utils';
-import { align } from '../lib/math';
 
 export default class NodeView extends React.Component {
   constructor(props) {
@@ -31,23 +30,30 @@ export default class NodeView extends React.Component {
   });
 
   updateAllPins() {
-    // TODO: Calc relative positions on schema change once and
-    // update using only node position.
     const node = this.props.node;
-    const pins = this.nodeBody.querySelectorAll('.node-view-pin');
-    const result = {};
+    for (let pinName in this.pins) {
+      const pin = this.pins[pinName];
+      pin.x = pin.x0 + this.state.posX;
+      pin.y = pin.y0 + this.state.posY;
+    }
+    this.props.onPinsUpdate(node, this.pins);
+  }
+
+  initPinPositions() {
+    const nodeBody = this.nodeBody;
+    const bodyRect = nodeBody.getBoundingClientRect();
+    const pins = nodeBody.querySelectorAll('.node-view-pin');
+    this.pins = {};
 
     for (let i = 0, len = pins.length; i < len; i += 1) {
       const pin = pins[i];
       const pinRect = pin.getBoundingClientRect();
       const pinName = pin.dataset.pinName;
-      result[pinName] = {
-        x: pinRect.left + pinRect.width / 2,
-        y: pinRect.top + pinRect.height / 2,
+      this.pins[pinName] = {
+        x0: (pinRect.left + pinRect.width / 2) - bodyRect.left,
+        y0: (pinRect.top + pinRect.height / 2) - bodyRect.top,
       };
     }
-
-    this.props.onPinsUpdate(node, result);
   }
 
   @bound
@@ -60,7 +66,10 @@ export default class NodeView extends React.Component {
   }
 
   componentDidMount() {
-    this.handleSchemaUpdate();
+    this.initPinPositions();
+    requestAnimationFrame(() => {
+      this.updateAllPins();
+    });
     this.props.node.on('schema.updated', this.handleSchemaUpdate);
   }
 
@@ -79,7 +88,7 @@ export default class NodeView extends React.Component {
     return null;
   }
 
-  renderPins(pins, isOutput) {
+  renderPins(pins) {
     const result = [];
 
     for (let key in pins) {
@@ -102,9 +111,9 @@ export default class NodeView extends React.Component {
     return (
       <div
         className='node-view'
+        ref={(body) => this.nodeBody = body}
         style={{
-          left: this.state.posX + 'px',
-          top: this.state.posY + 'px',
+          transform: `translate(${this.state.posX + 'px'},${this.state.posY + 'px'})`,
         }}>
         <div
           className='node-view-header'
@@ -116,9 +125,7 @@ export default class NodeView extends React.Component {
             <span onClick={this.onRemoveRequest}>X</span>
           </div>
         </div>
-        <div
-          className='node-view-body'
-          ref={(body) => this.nodeBody = body}>
+        <div className='node-view-body'>
           {this.renderContents()}
           <div className='node-view-pins'>
             <ul className='node-view-inputs'>
