@@ -3,7 +3,6 @@ import SceneNode from './SceneNode';
 import EventEmitter from './EventEmitter';
 
 let idCounter = 0;
-let iterationCounter = 0;
 
 export default class SceneGraph extends EventEmitter {
   constructor() {

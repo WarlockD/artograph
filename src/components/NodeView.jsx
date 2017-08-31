@@ -22,9 +22,12 @@ export default class NodeView extends React.Component {
       };
     },
     onMove: (start, event) => {
+      const [dx, dy] = this.props.viewport.vectorToWorld(
+        event.clientX - start.x0,
+        event.clientY - start.y0);
       this.setState({
-        posX: start.px + (event.pageX - start.x0),
-        posY: start.py + (event.pageY - start.y0),
+        posX: start.px + dx,
+        posY: start.py + dy,
       });
     }
   });
@@ -51,9 +54,12 @@ export default class NodeView extends React.Component {
         const pin = pins[i];
         const pinRect = pin.getBoundingClientRect();
         const pinName = pin.dataset.pinName;
+        const pos = this.props.viewport.vectorToWorld(
+          (pinRect.left + pinRect.width / 2) - bodyRect.left,
+          (pinRect.top + pinRect.height / 2) - bodyRect.top);
         this.pins[pinName] = {
-          x0: (pinRect.left + pinRect.width / 2) - bodyRect.left,
-          y0: (pinRect.top + pinRect.height / 2) - bodyRect.top,
+          x0: pos[0],
+          y0: pos[1],
         };
       }
     }
@@ -101,7 +107,10 @@ export default class NodeView extends React.Component {
       result.push(<li key={key}>
         <div
           className='node-view-pin'
-          onMouseDown={() => this.props.onConnectionRequest(this.props.node, key)}
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            this.props.onConnectionRequest(this.props.node, key)
+          }}
           data-pin-name={key}/>
         {pin.name}
       </li>);

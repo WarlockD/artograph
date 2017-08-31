@@ -14,7 +14,7 @@ import { loadObject, saveObject } from './lib/bigObjectStore';
 
 const ScreenNode = NodeFactory.createNode('ScreenNode');
 const scene = new SceneGraph();
-// benchmark(500);
+// benchmark(100);
 scene.attachNode(ScreenNode);
 
 function updateScreen() {
@@ -104,6 +104,10 @@ function benchmark(count = 100) {
           out: { type: 'float', name: 'Negated' },
         },
       });
+      this.meta = {
+        posX: Math.random() * 1000,
+        posY: Math.random() * 1000,
+      }
     }
 
     update(inputs) {

@@ -1,6 +1,10 @@
 import React from 'react';
-import { bound } from '../lib/utils';
+import { bound, dragHelper } from '../lib/utils';
 import MetaNodeView from './MetaNodeView';
+import Viewport from './Viewport';
+
+// TODO: Calculate this dynamically or read from SCSS vars
+const CONNECTION_PIN_RADIUS = 8;
 
 class PinsRegistry {
   constructor() {
@@ -90,16 +94,15 @@ class PinsRegistry {
   }
 }
 
-// TODO: Calculate this dynamically or read from SCSS vars
-const CONNECTION_PIN_RADIUS = 8;
-
 class Connection extends React.Component {
-  handleOutputDragStart = () => {
+  handleOutputDragStart = (event) => {
+    event.stopPropagation();
     const connection = this.props.connection;
     this.props.onDragStart(connection, true);
   }
 
-  handleInputDragStart = () => {
+  handleInputDragStart = (event) => {
+    event.stopPropagation();
     const connection = this.props.connection;
     this.props.onDragStart(connection, false);
   }
@@ -142,16 +145,18 @@ class CandidateConnection extends React.Component {
 
   componentDidMount() {
     const onMove = (event) => {
+      const [px, py] = this.props.viewport.pointToWorld(event.clientX, event.clientY);
       this.setState({
-        posX: event.clientX,
-        posY: event.clientY,
+        posX: px,
+        posY: py,
       });
     }
 
     const onEnd = (event) => {
       document.removeEventListener('mousemove', onMove, { capture: true });
       document.removeEventListener('mouseup', onEnd);
-      const pin = this.props.pins.getPinNear(event.clientX, event.clientY, 10);
+      const [px, py] = this.props.viewport.pointToWorld(event.clientX, event.clientY);
+      const pin = this.props.pins.getPinNear(px, py, 10);
 
       if (!pin) return this.props.onDragEnd(null);
 
@@ -176,11 +181,6 @@ class CandidateConnection extends React.Component {
 
     document.addEventListener('mousemove', onMove, { capture: true });
     document.addEventListener('mouseup', onEnd);
-
-    this.setState({
-      posX: event.clientX,
-      posY: event.clientY,
-    });
   }
 
   render() {
@@ -275,12 +275,13 @@ class WiringOverlay extends React.Component {
 
     if (this.state.candidateConnection) {
       candidate = <CandidateConnection
+        viewport={this.props.viewport}
         candidate={this.state.candidateConnection}
         onDragEnd={this.handleConnectionDragEnd}
         pins={this.props.pins}/>
     }
 
-    return <svg className='graph-view-connections'>
+    return <g>
       {this.props.connections.map((connection, index) => {
         // Hide connection that is being edited currently
         if (connection === this.state.currentConnection) return null;
@@ -293,7 +294,7 @@ class WiringOverlay extends React.Component {
           pins={this.props.pins}/>
       })}
       {candidate}
-    </svg>
+    </g>
   }
 }
 
@@ -301,8 +302,51 @@ export default class GraphView extends React.Component {
   constructor(props) {
     super(props);
 
+    const graph = props.graph;
+
     this.pins = new PinsRegistry();
-    this.state = {};
+    this.viewport = new Viewport();
+    this.viewport.setPosition(graph.meta.posX, graph.meta.posY);
+  }
+
+  // NOTE: graph view position is not stored in nor updated via react
+  // state because re-rendering of a whole graph just to shift
+  // nodes a bit is way too much.
+  startGraphMove = dragHelper({
+    onStart: (event) => {
+      return {
+        px: this.viewport.posX,
+        py: this.viewport.posY,
+        x0: event.clientX,
+        y0: event.clientY,
+      };
+    },
+    onMove: (start, event) => {
+      // Update viewport
+      const meta = this.props.graph.meta;
+      const [dx, dy] = this.viewport.vectorToWorld(
+        start.x0 - event.clientX,
+        start.y0 - event.clientY);
+      meta.posX = start.px + dx;
+      meta.posY = start.py + dy;
+      this.viewport.setPosition(meta.posX, meta.posY);
+      this.updateGraphPosition();
+    }
+  });
+
+  updateGraphPosition() {
+    const scale = this.viewport.scale;
+    const [posX, posY] = [this.viewport.translateX, this.viewport.translateY];
+    const cssTransform = `
+      translate(${posX}px, ${posY}px)
+      scale(${scale})
+      translate(50%, 50%)`;
+    this.nodesWrapper.style.transform = cssTransform;
+    const transform = this.wiringWrapper.transform.baseVal;
+    transform.getItem(1).setScale(scale, scale);
+    transform.getItem(0).setTranslate(
+      posX + this.root.clientWidth / 2,
+      posY + this.root.clientHeight / 2);
   }
 
   @bound
@@ -349,10 +393,21 @@ export default class GraphView extends React.Component {
     this.wiring.setCandidate(candidateConnection);
   }
 
+  componentDidMount() {
+    this.updateGraphPosition();
+  }
+
+  componentDidUpdate() {
+    this.updateGraphPosition();
+  }
+
+  refWiring = (wiring) => { this.wiring = wiring };
+
   renderNodes(nodes) {
     return nodes.map((node) => {
       return <MetaNodeView
         key={node.id}
+        viewport={this.viewport}
         node={node}
         onPinsUpdate={this.handlePinsUpdate}
         onConnectionRequest={this.handleConnectionRequest}
@@ -360,19 +415,31 @@ export default class GraphView extends React.Component {
     });
   }
 
-  refWiring = (wiring) => { this.wiring = wiring };
-
   render() {
     const graph = this.props.graph;
 
-    return <div className='graph-view'>
-      {this.renderNodes(graph.nodes)}
-      <WiringOverlay
-        ref={this.refWiring}
-        connections={graph.connections}
-        pins={this.pins}
-        onConnect={this.handleConnect}
-        onDisconnect={this.handleDisconnect}/>
+    return <div
+      className='graph-view'
+      ref={(root) => this.root = root}
+      onMouseDown={this.startGraphMove}>
+      <div
+        className='graph-view-nodes-wrapper'
+        ref={(nodesWrapper) => this.nodesWrapper = nodesWrapper}>
+        {this.renderNodes(graph.nodes)}
+      </div>
+      <svg className='graph-view-wiring'>
+        <g
+          ref={(wiringWrapper) => this.wiringWrapper = wiringWrapper}
+          transform='translate(0, 0) scale(1)'>
+          <WiringOverlay
+            ref={this.refWiring}
+            viewport={this.viewport}
+            connections={graph.connections}
+            pins={this.pins}
+            onConnect={this.handleConnect}
+            onDisconnect={this.handleDisconnect}/>
+        </g>
+      </svg>
     </div>
   }
 }

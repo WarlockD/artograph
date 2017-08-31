@@ -5,9 +5,16 @@ import NodeFactory from './NodeFactory';
 const SCENE_SCHEMA_VERSION = 1;
 
 export default class SerializableSceneGraph extends SceneGraph {
+  constructor() {
+    super();
+
+    this.meta = {};
+  }
+
   async toJSON() {
     return {
       version: SCENE_SCHEMA_VERSION,
+      meta: this.meta,
       nodes: this.nodes.map((node) => node.toJSON()),
       connections: this.connections.map((connection) => {
         return [
@@ -47,5 +54,7 @@ export default class SerializableSceneGraph extends SceneGraph {
         nodeMapping[connection[2]],
         connection[3]);
     }
+
+    this.meta = json.meta;
   }
 }
