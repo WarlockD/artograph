@@ -105,8 +105,8 @@ function benchmark(count = 100) {
         },
       });
       this.meta = {
-        posX: Math.random() * 1000,
-        posY: Math.random() * 1000,
+        posX: Math.random() * 10000 - 5000,
+        posY: Math.random() * 10000 - 5000,
       }
     }
 

@@ -337,17 +337,18 @@ export default class GraphView extends React.Component {
 
   updateGraphTransform() {
     const scale = this.viewport.scale;
-    const [posX, posY] = [this.viewport.translateX, this.viewport.translateY];
+    const posX = this.viewport.translateX;
+    const posY = this.viewport.translateY;
     const cssTransform = `
-      translate(${posX}px, ${posY}px)
+      translate3d(${posX}px, ${posY}px, 0)
       scale(${scale})
-      translate(50%, 50%)`;
+      translate3d(50%, 50%, 0)`;
     this.nodesWrapper.style.transform = cssTransform;
     const transform = this.wiringWrapper.transform.baseVal;
     transform.getItem(1).setScale(scale, scale);
     transform.getItem(0).setTranslate(
-      posX + this.root.clientWidth / 2,
-      posY + this.root.clientHeight / 2);
+      posX + this.viewport.width / 2,
+      posY + this.viewport.height / 2);
   }
 
   @bound
@@ -413,6 +414,8 @@ export default class GraphView extends React.Component {
   }
 
   componentDidMount() {
+    // FIXME: This should be updated dynamically
+    this.viewport.setSize(this.root.clientWidth, this.root.clientHeight);
     this.updateGraphTransform();
   }
 
