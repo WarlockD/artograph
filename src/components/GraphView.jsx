@@ -1,5 +1,6 @@
 import React from 'react';
 import { bound, dragHelper } from '../lib/utils';
+import { clamp } from '../lib/math';
 import MetaNodeView from './MetaNodeView';
 import Viewport from './Viewport';
 
@@ -330,11 +331,11 @@ export default class GraphView extends React.Component {
       meta.posX = start.px + dx;
       meta.posY = start.py + dy;
       this.viewport.setPosition(meta.posX, meta.posY);
-      this.updateGraphPosition();
+      this.updateGraphTransform();
     }
   });
 
-  updateGraphPosition() {
+  updateGraphTransform() {
     const scale = this.viewport.scale;
     const [posX, posY] = [this.viewport.translateX, this.viewport.translateY];
     const cssTransform = `
@@ -393,12 +394,30 @@ export default class GraphView extends React.Component {
     this.wiring.setCandidate(candidateConnection);
   }
 
+  @bound
+  handleMouseWheel(event) {
+    event.preventDefault();
+    const step = 1.4;
+    const factor = event.deltaY < 0 ? step : 1 / step;
+    const newScale = clamp(this.viewport.scale * factor, 0.1, 1);
+    this.viewport.setScale(newScale);
+    this.updateGraphTransform();
+  }
+
+  @bound
+  handleDoubleClick(event) {
+    event.preventDefault();
+    this.viewport.setScale(1);
+    this.viewport.setPosition(0, 0);
+    this.updateGraphTransform();
+  }
+
   componentDidMount() {
-    this.updateGraphPosition();
+    this.updateGraphTransform();
   }
 
   componentDidUpdate() {
-    this.updateGraphPosition();
+    this.updateGraphTransform();
   }
 
   refWiring = (wiring) => { this.wiring = wiring };
@@ -421,6 +440,8 @@ export default class GraphView extends React.Component {
     return <div
       className='graph-view'
       ref={(root) => this.root = root}
+      onDoubleClick={this.handleDoubleClick}
+      onWheel={this.handleMouseWheel}
       onMouseDown={this.startGraphMove}>
       <div
         className='graph-view-nodes-wrapper'
