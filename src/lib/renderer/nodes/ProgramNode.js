@@ -6,7 +6,6 @@ const uniformTypeMapping = {
   int: 'uniform1i',
   vec2: 'uniform2fv',
   vec3: 'uniform3fv',
-  color: 'uniform3fv',
   sampler2D: 'uniform1i',
 };
 
@@ -33,7 +32,7 @@ gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 export default class ProgramNode extends SceneNode {
   static nodeName = 'Shader';
 
-  constructor(definition) {
+  constructor() {
     super({
       name: ProgramNode.nodeName,
       inputs: [],
@@ -46,20 +45,26 @@ export default class ProgramNode extends SceneNode {
 
     this.rendererSize = ScreenNode.getRendererSize();
     this.initFramebuffer(this.rendererSize.width, this.rendererSize.height);
-
-    if (definition) this.loadDefinition(definition);
   }
 
-  loadDefinition(definition) {
+  compile(shader) {
+    const inputs = shader
+      .match(/uniform\s+\w+\s+\w+(?=;)/g)
+      .reduce((inputs, uniformDef) => {
+        const [_, type, name] = uniformDef.split(' ');
+        inputs[name] = {
+          name: name,
+          type: type,
+        };
+        return inputs;
+      }, {});
+
     this.updateSchema({
-      name: definition.name || 'Shader',
-      inputs: definition.uniforms,
-      outputs: {
-        result: { type: 'sampler2D', name: 'Result' },
-      },
+      inputs: inputs,
     });
 
-    this.program = ScreenNode.createProgram(definition.shader);
+    this.code = shader;
+    this.program = ScreenNode.createProgram(shader);
 
     this.aPosition = gl.getAttribLocation(this.program, 'aPosition');
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
@@ -81,6 +86,17 @@ export default class ProgramNode extends SceneNode {
     this.framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.result, 0);
+  }
+
+  toJSON() {
+    const result = super.toJSON();
+    result.code = this.code;
+    return result;
+  }
+
+  async fromJSON(json) {
+    await super.fromJSON(json);
+    this.compile(json.code);
   }
 
   update(inputs) {
