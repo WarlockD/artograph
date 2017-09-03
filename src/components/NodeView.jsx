@@ -1,5 +1,6 @@
 import React from 'react';
 import { bound, dragHelper } from '../lib/utils';
+import NodeEditor from './NodeEditor';
 
 export default class NodeView extends React.Component {
   constructor(props) {
@@ -72,6 +73,11 @@ export default class NodeView extends React.Component {
     this.props.onRemoveRequest(this.props.node);
   }
 
+  @bound
+  handleEditorRequest() {
+    this.props.onEditorRequest(this.renderEditor());
+  }
+
   handleSchemaUpdate = () => {
     this.pins = null;
     this.forceUpdate();
@@ -97,6 +103,12 @@ export default class NodeView extends React.Component {
 
   renderContents() {
     return null;
+  }
+
+  renderEditor() {
+    return <NodeEditor
+      node={this.props.node}
+      nodeView={this}/>
   }
 
   renderPins(pins) {
@@ -125,6 +137,7 @@ export default class NodeView extends React.Component {
     return (
       <div
         className='node-view'
+        onClick={this.handleEditorRequest}
         ref={(body) => this.nodeBody = body}
         style={{
           transform: `translate(${this.state.posX + 'px'},${this.state.posY + 'px'})`,
@@ -133,9 +146,7 @@ export default class NodeView extends React.Component {
           className='node-view-header'
           onMouseDown={this.startNodeMove}>
           {node.name}
-          <div
-            className='node-view-actions'
-            onMouseDown={(event) => event.stopPropagation()}>
+          <div className='node-view-actions'>
             <span onClick={this.onRemoveRequest}>X</span>
           </div>
         </div>

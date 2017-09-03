@@ -1,5 +1,10 @@
 import React from 'react';
-import { bound, dragHelper } from '../lib/utils';
+import {
+  bound,
+  classes,
+  dragHelper,
+  keyboardHelper,
+} from '../lib/utils';
 import { clamp } from '../lib/math';
 import MetaNodeView from './MetaNodeView';
 import Viewport from './Viewport';
@@ -308,6 +313,10 @@ export default class GraphView extends React.Component {
     this.pins = new PinsRegistry();
     this.viewport = new Viewport();
     this.viewport.setPosition(graph.meta.posX, graph.meta.posY);
+
+    this.state = {
+      isEditorOpen: false,
+    };
   }
 
   // NOTE: graph view position is not stored in nor updated via react
@@ -414,6 +423,11 @@ export default class GraphView extends React.Component {
   }
 
   componentDidMount() {
+    // TODO: Better shortcut system needed
+    keyboardHelper(document, {
+      'F2': () => this.setState({ isEditorOpen: !this.state.isEditorOpen }),
+    });
+
     // FIXME: This should be updated dynamically
     this.viewport.setSize(this.root.clientWidth, this.root.clientHeight);
     this.updateGraphTransform();
@@ -431,6 +445,7 @@ export default class GraphView extends React.Component {
         key={node.id}
         viewport={this.viewport}
         node={node}
+        onEditorRequest={(editor) => this.setState({ editor: editor })}
         onPinsUpdate={this.handlePinsUpdate}
         onConnectionRequest={this.handleConnectionRequest}
         onRemoveRequest={this.detachNode}/>
@@ -439,6 +454,10 @@ export default class GraphView extends React.Component {
 
   render() {
     const graph = this.props.graph;
+    const editor = this.state.editor;
+    const editorClasses = classes('graph-view-node-editor', {
+      hidden: !this.state.isEditorOpen,
+    });
 
     return <div
       className='graph-view'
@@ -464,6 +483,9 @@ export default class GraphView extends React.Component {
             onDisconnect={this.handleDisconnect}/>
         </g>
       </svg>
+      <div className={editorClasses}>
+        {editor}
+      </div>
     </div>
   }
 }

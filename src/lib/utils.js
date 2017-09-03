@@ -62,11 +62,9 @@ export function dragHelper(options, event) {
 
   function onDragStart(event) {
     if (event.currentTarget !== event.target) return;
+    if (event.button !== 0) return;
 
     event.preventDefault();
-    event.stopPropagation();
-
-    if (event.button !== 0) return;
 
     const mappedEvent = mapPointerEvent(event);
     const init = onStart && onStart(mappedEvent);

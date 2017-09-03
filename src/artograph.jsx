@@ -23,8 +23,6 @@ function updateScreen() {
 }
 
 class Page extends React.Component {
-  screen = null;
-
   state = {
     isPickerOpened: false,
   };
@@ -65,7 +63,10 @@ class Page extends React.Component {
 
   render() {
     return (
-      <div className='l-artograph'>
+      <div
+        className='l-artograph'
+        tabIndex='0'
+        onKeyDown={this.handleKeyDown}>
         <div
           className='result-image'
           ref={(container) => this.imageContainer = container}>

@@ -1,8 +1,12 @@
-.script-node-view {
+.script-node-editor {
+  height: 100%;
+
   textarea {
+    box-sizing: border-box;
     display: block;
     padding: 0.5em;
-    width: 320px;
+    width: 100%;
+    height: 100%;
     font-family: monospace;
     resize: none;
     overflow: auto;
