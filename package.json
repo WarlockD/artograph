@@ -1,11 +1,11 @@
 {
-  "name": "photospice",
+  "name": "artograph",
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
     "start": "webpack-dev-server --inline --hot",
     "bundle": "webpack -p",
-    "backup": "tar --exclude='./node_modules' -cf ../photospice.tar .",
+    "backup": "tar --exclude='./node_modules' -cf ../artograph.tar .",
     "test": "jest",
     "test-watch": "jest --watch"
   },
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/photospice/photospice.git"
+    "url": "https://github.com/dcbrwn/artograph.git"
   },
   "author": {
     "name": "Danila Shutov",

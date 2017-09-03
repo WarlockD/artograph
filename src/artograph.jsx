@@ -65,13 +65,13 @@ class Page extends React.Component {
 
   render() {
     return (
-      <div className='l-photospice'>
+      <div className='l-artograph'>
         <div
           className='result-image'
           ref={(container) => this.imageContainer = container}>
         </div>
         <GraphView graph={scene} />
-        <div className='l-photospice-node-picker'>
+        <div className='l-artograph-node-picker'>
           <NodePicker
             isOpened={this.state.isPickerOpened}
             onClose={() => this.setState({ isPickerOpened: false })}

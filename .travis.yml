@@ -1,14 +1,5 @@
 dist: trusty
 language: node_js
 node_js: 6
-script: yarn test && chmod +x ./release.sh && ./release.sh
+script: yarn test
 cache: yarn
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  local_dir: release
-  repo: photospice/photospice.github.io
-  target_branch: master
-  on:
-    branch: master

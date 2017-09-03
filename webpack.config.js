@@ -13,7 +13,7 @@ module.exports = {
   },
   context: __dirname,
   entry: {
-    photospice: ['babel-polyfill', './src/photospice.jsx'],
+    artograph: ['babel-polyfill', './src/artograph.jsx'],
     // sink: ['babel-polyfill', './src/sink.jsx'],
   },
   output: {

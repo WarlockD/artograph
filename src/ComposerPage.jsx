@@ -61,9 +61,9 @@ export default class ComposerPage extends React.Component {
         <div className='composer-sidebar'>
           <div className='composer-sidebar-header'>
             <h1>
-              Photospice
+              artograph
               <a
-                href='https://github.com/photospice/photospice'
+                href='https://github.com/artograph/artograph'
                 rel='noopener'
                 style={{textDecoration: 'none'}}>
                 <sup className='text-negative'>&alpha;</sup>
