@@ -461,28 +461,31 @@ export default class GraphView extends React.Component {
 
     return <div
       className='graph-view'
-      ref={(root) => this.root = root}
-      onDoubleClick={this.handleDoubleClick}
-      onWheel={this.handleMouseWheel}
-      onMouseDown={this.startGraphMove}>
+      ref={(root) => this.root = root}>
       <div
-        className='graph-view-nodes-wrapper'
-        ref={(nodesWrapper) => this.nodesWrapper = nodesWrapper}>
-        {this.renderNodes(graph.nodes)}
+        className='graph-view-viewport'
+        onDoubleClick={this.handleDoubleClick}
+        onMouseDown={this.startGraphMove}
+        onWheel={this.handleMouseWheel}>
+        <div
+          className='graph-view-nodes-wrapper'
+          ref={(nodesWrapper) => this.nodesWrapper = nodesWrapper}>
+          {this.renderNodes(graph.nodes)}
+        </div>
+        <svg className='graph-view-wiring'>
+          <g
+            ref={(wiringWrapper) => this.wiringWrapper = wiringWrapper}
+            transform='translate(0, 0) scale(1)'>
+            <WiringOverlay
+              ref={this.refWiring}
+              viewport={this.viewport}
+              connections={graph.connections}
+              pins={this.pins}
+              onConnect={this.handleConnect}
+              onDisconnect={this.handleDisconnect}/>
+          </g>
+        </svg>
       </div>
-      <svg className='graph-view-wiring'>
-        <g
-          ref={(wiringWrapper) => this.wiringWrapper = wiringWrapper}
-          transform='translate(0, 0) scale(1)'>
-          <WiringOverlay
-            ref={this.refWiring}
-            viewport={this.viewport}
-            connections={graph.connections}
-            pins={this.pins}
-            onConnect={this.handleConnect}
-            onDisconnect={this.handleDisconnect}/>
-        </g>
-      </svg>
       <div className={editorClasses}>
         {editor}
       </div>
