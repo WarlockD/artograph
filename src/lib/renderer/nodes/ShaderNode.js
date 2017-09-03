@@ -29,12 +29,12 @@ const vertexData = new Float32Array([
 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 
-export default class ProgramNode extends SceneNode {
+export default class ShaderNode extends SceneNode {
   static nodeName = 'Shader';
 
   constructor() {
     super({
-      name: ProgramNode.nodeName,
+      name: ShaderNode.nodeName,
       inputs: [],
       outputs: {
         result: { type: 'sampler2D', name: 'Result' },
@@ -75,6 +75,8 @@ export default class ProgramNode extends SceneNode {
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
     gl.vertexAttribPointer(this.aTexCoord, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.aTexCoord);
+
+    this.invalidate();
   }
 
   initFramebuffer(width, height) {

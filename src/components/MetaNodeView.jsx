@@ -4,13 +4,13 @@ import NodeView from './NodeView';
 import ScriptNodeView from './ScriptNodeView';
 import OscNodeView from './OscNodeView';
 import Sampler2DNodeView from './Sampler2DNodeView';
-import ProgramNodeView from './ProgramNodeView';
+import ShaderNodeView from './ShaderNodeView';
 
 const nodes = [
   ScriptNodeView,
   OscNodeView,
   Sampler2DNodeView,
-  ProgramNodeView,
+  ShaderNodeView,
 ];
 
 export default class MetaNodeView extends React.Component {

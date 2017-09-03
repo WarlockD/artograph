@@ -66,6 +66,7 @@ export default class ScriptNode extends SceneNode {
     try {
       this.func = eval(script);
       this.code = code;
+      this.invalidate();
     } catch (e) {
       console.error(e);
     }

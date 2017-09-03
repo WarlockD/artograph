@@ -79,6 +79,10 @@ export default class SceneNode extends EventEmitter {
     output.lastUpdate = updateCounter++;
   }
 
+  invalidate() {
+    this._updateRequired = true;
+  }
+
   onEnter() {
     // Do nothing by default
   }

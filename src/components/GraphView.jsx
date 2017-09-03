@@ -416,7 +416,7 @@ export default class GraphView extends React.Component {
 
   @bound
   handleDoubleClick(event) {
-    event.preventDefault();
+    event.stopPropagation();
     this.viewport.setScale(1);
     this.viewport.setPosition(0, 0);
     this.updateGraphTransform();

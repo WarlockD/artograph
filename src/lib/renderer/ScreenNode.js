@@ -46,6 +46,7 @@ class ScreenNode extends SceneNode {
     });
 
     this.canvas = document.createElement('canvas');
+    this.canvas.style.backgroundColor = 'transparent';
 
     this.initGL(this.canvas);
     this.initAudio();

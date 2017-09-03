@@ -145,8 +145,9 @@ export default class SceneGraph extends EventEmitter {
         }
       }
 
-      if (isDirty) {
+      if (isDirty || node._updateRequired) {
         node.update(inputs);
+        node._updateRequired = false;
       }
     } else {
       node.update();
