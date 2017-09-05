@@ -422,19 +422,28 @@ export default class GraphView extends React.Component {
     this.updateGraphTransform();
   }
 
+  @bound
+  handleWindowResize() {
+    this.viewport.setSize(this.root.clientWidth, this.root.clientHeight);
+    this.updateGraphTransform();
+  }
+
   componentDidMount() {
     // TODO: Better shortcut system needed
     keyboardHelper(document, {
       'F2': () => this.setState({ isEditorOpen: !this.state.isEditorOpen }),
     });
 
-    // FIXME: This should be updated dynamically
-    this.viewport.setSize(this.root.clientWidth, this.root.clientHeight);
-    this.updateGraphTransform();
+    this.handleWindowResize();
+    window.addEventListener('resize', this.handleWindowResize);
   }
 
   componentDidUpdate() {
     this.updateGraphTransform();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.handleWindowResize);
   }
 
   refWiring = (wiring) => { this.wiring = wiring };
