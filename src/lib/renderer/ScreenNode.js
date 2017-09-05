@@ -181,14 +181,15 @@ class ScreenNode extends SceneNode {
     canvas.width = aWidth;
     canvas.height = aHeight;
     gl.viewport(0, 0, aWidth, aHeight);
+
+    this.rendererSize = Object.freeze({
+      width: gl.drawingBufferWidth,
+      height: gl.drawingBufferHeight,
+    });
   }
 
   getRendererSize() {
-    const gl = this.gl;
-    return {
-      width: gl.drawingBufferWidth,
-      height: gl.drawingBufferHeight,
-    };
+    return this.rendererSize;
   }
 
   resizeToPowerOfTwo(image) {

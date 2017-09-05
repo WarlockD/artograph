@@ -29,6 +29,10 @@ const vertexData = new Float32Array([
 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 gl.bufferData(gl.ARRAY_BUFFER, vertexData.buffer, gl.STATIC_DRAW);
 
+const builtIns = [
+  'uResolution',
+];
+
 export default class ShaderNode extends SceneNode {
   static nodeName = 'Shader';
 
@@ -52,10 +56,12 @@ export default class ShaderNode extends SceneNode {
       .match(/uniform\s+\w+\s+\w+(?=;)/g)
       .reduce((inputs, uniformDef) => {
         const [_, type, name] = uniformDef.split(' ');
-        inputs[name] = {
-          name: name,
-          type: type,
-        };
+        if (builtIns.indexOf(name) === -1) {
+          inputs[name] = {
+            name: name,
+            type: type,
+          };
+        }
         return inputs;
       }, {});
 
@@ -75,6 +81,8 @@ export default class ShaderNode extends SceneNode {
     gl.bindBuffer(gl.ARRAY_BUFFER, textureBuffer);
     gl.vertexAttribPointer(this.aTexCoord, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(this.aTexCoord);
+
+    this.uResolution = gl.getUniformLocation(this.program, 'uResolution');
 
     this.invalidate();
   }
@@ -106,7 +114,7 @@ export default class ShaderNode extends SceneNode {
 
     const currentSize = ScreenNode.getRendererSize();
 
-    if (currentSize.toString() !== this.rendererSize.toString()) {
+    if (currentSize !== this.rendererSize) {
       this.initFramebuffer(currentSize.width, currentSize.height);
       this.rendererSize = currentSize;
     }
@@ -114,6 +122,7 @@ export default class ShaderNode extends SceneNode {
     gl.useProgram(this.program);
     gl.enableVertexAttribArray(this.aPosition);
     gl.enableVertexAttribArray(this.aTexCoord);
+    gl.uniform2fv(this.uResolution, [currentSize.width, currentSize.height]);
 
     let activeTexture = 0;
     for (let inputId in this.inputs) {
