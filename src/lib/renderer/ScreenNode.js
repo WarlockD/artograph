@@ -195,10 +195,16 @@ class ScreenNode extends SceneNode {
   resizeToPowerOfTwo(image) {
     const size = Math.max(image.width, image.height);
     const alignedSize = toPowerOfTwo(Math.min(this.MAX_TEXTURE_RESOLUTION, size));
+    const factor = alignedSize / size;
     const canvas = document.createElement('canvas');
     canvas.width = alignedSize;
     canvas.height = alignedSize;
-    canvas.getContext('2d').drawImage(image, 0, alignedSize - image.height);
+    canvas.getContext('2d').drawImage(
+      image,
+      (alignedSize - image.width * factor) / 2,
+      (alignedSize - image.height * factor) / 2,
+      image.width * factor,
+      image.height * factor);
     return canvas;
   }
 
