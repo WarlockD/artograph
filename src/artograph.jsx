@@ -28,6 +28,10 @@ class Page extends React.Component {
   };
 
   componentDidMount() {
+    window.addEventListener('resize', () => {
+      ScreenNode.setRendererSize(window.innerWidth, window.innerHeight);
+    });
+
     keyboardHelper(document, {
       'Escape': () => {
         this.setState({
