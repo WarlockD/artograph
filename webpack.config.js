@@ -32,6 +32,18 @@ module.exports = {
       { test: /\.js$/, loader: 'source-map-loader' },
       { test: /\.yml$/, loader: 'yml-loader' },
       {
+        test: /\.css$/,
+        use: [
+          { loader: 'style-loader' },
+          {
+            loader: 'css-loader',
+            options: {
+              url: false
+            },
+          },
+        ],
+      },
+      {
         test: /\.scss$/,
         use: [
           { loader: 'style-loader' },

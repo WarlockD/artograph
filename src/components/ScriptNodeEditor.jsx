@@ -2,6 +2,10 @@ import React from 'react';
 import debounce from 'lodash/debounce';
 import { bound } from '../lib/utils';
 import NodeEditor from './NodeEditor';
+import CodeMirror from 'react-codemirror';
+
+require('codemirror/lib/codemirror.css');
+require('codemirror/mode/clike/clike');
 
 export default class ScriptNodeEditor extends NodeEditor {
   constructor(props) {
@@ -17,17 +21,24 @@ export default class ScriptNodeEditor extends NodeEditor {
   }
 
   @bound
-  handleCodeChange(event) {
-    const code = event.target.value;
+  handleCodeChange(code) {
     this.compile(code);
     this.setState({ code });
   }
 
+  componentDidMount() {
+    this.editor.getCodeMirror().setSize('100%', '100%');
+  }
+
   render() {
-    return <div className='script-node-editor'>
-      <textarea
-        onChange={this.handleCodeChange}
-        value={this.state.code}/>
-    </div>;
+    return <CodeMirror
+      onChange={this.handleCodeChange}
+      value={this.state.code}
+      ref={(editor) => this.editor = editor}
+      options={{
+        mode: 'clike',
+        lineNumbers: true,
+        tabSize: 2,
+      }}/>
   }
 }
