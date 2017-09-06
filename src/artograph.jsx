@@ -42,9 +42,35 @@ class Page extends React.Component {
       'F6': async () => {
         saveObject('quicksave', await scene.toJSON());
       },
+      'F7': async () => {
+        const json = await scene.toJSON();
+        const string = JSON.stringify(json);
+        const file = new Blob([ string ], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(file);
+        link.download = 'scene.json';
+        link.click();
+        URL.revokeObjectURL(link.href);
+      },
       'F9': async () => {
         await scene.fromJSON(await loadObject('quicksave'));
         this.forceUpdate();
+      },
+      'F10': async () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (event) => {
+          const reader = new FileReader();
+          reader.onload = async (event) => {
+            const string = event.target.result;
+            const json = JSON.parse(string);
+            await scene.fromJSON(json);
+            this.forceUpdate();
+          };
+          reader.readAsText(event.target.files[0]);
+        };
+        input.click();
       },
       'Alt+Enter': () => {
         ScreenNode.requestFullscreen();
