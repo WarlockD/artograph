@@ -89,7 +89,7 @@ export default class ShaderNode extends SceneNode {
 
   initFramebuffer(width, height) {
     if (this.framebuffer) gl.deleteFramebuffer(this.framebuffer);
-    if (this.result) gl.deleteFramebuffer(this.result);
+    if (this.result) gl.deleteTexture(this.result);
 
     this.result = ScreenNode.createTexture();
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
