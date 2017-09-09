@@ -23,10 +23,6 @@ export default class ScriptNodeEditor extends NodeEditor {
     this.setState({ code });
   }
 
-  componentDidMount() {
-    this.editor.getCodeMirror().setSize('100%', '100%');
-  }
-
   componentWillReceiveProps(nextProps) {
     if (this.props.node !== nextProps.node) {
       this.setState({ code: nextProps.node.code });
@@ -42,6 +38,7 @@ export default class ScriptNodeEditor extends NodeEditor {
         mode: 'clike',
         lineNumbers: true,
         tabSize: 2,
+        viewportMargin: 3,
       }}/>
   }
 }
