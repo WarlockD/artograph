@@ -39,7 +39,6 @@
     "lodash": "^4.17.4",
     "node-sass": "^4.5.3",
     "react": "^15.5.4",
-    "react-codemirror": "^1.0.0",
     "react-dom": "^15.5.4",
     "react-modal": "^2.2.2",
     "react-sortable-hoc": "^0.6.5",

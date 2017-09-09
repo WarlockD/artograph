@@ -2,10 +2,7 @@ import React from 'react';
 import debounce from 'lodash/debounce';
 import { bound } from '../lib/utils';
 import NodeEditor from './NodeEditor';
-import CodeMirror from 'react-codemirror';
-
-require('codemirror/lib/codemirror.css');
-require('codemirror/mode/clike/clike');
+import CodeMirror from './CodeMirror';
 
 export default class ScriptNodeEditor extends NodeEditor {
   constructor(props) {
@@ -15,19 +12,25 @@ export default class ScriptNodeEditor extends NodeEditor {
       code: props.node.code,
     };
 
-    this.compile = debounce((code) => {
-      this.props.node.compile(code);
+    this.compile = debounce((node, code) => {
+      node.compile(code);
     }, 1000);
   }
 
   @bound
   handleCodeChange(code) {
-    this.compile(code);
+    this.compile(this.props.node, code);
     this.setState({ code });
   }
 
   componentDidMount() {
     this.editor.getCodeMirror().setSize('100%', '100%');
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.node !== nextProps.node) {
+      this.setState({ code: nextProps.node.code });
+    }
   }
 
   render() {
